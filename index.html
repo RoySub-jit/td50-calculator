@@ -1178,7 +1178,7 @@
         <div class="brand-mark" aria-hidden="true">TD</div>
         <div class="title-copy">
           <h1>TD50 Calculator</h1>
-          <div class="subtitle">CPDB-style estimator for article-derived tumor-incidence data</div>
+          <div class="subtitle">Estimator for article-derived tumor-incidence data</div>
           <div class="header-meta" aria-label="Application status">
             <span class="status-chip">Offline</span>
             <span class="status-chip">No network calls</span>
@@ -1296,7 +1296,7 @@
               </table>
             </div>
             <div class="mini" style="margin-top:8px">
-              Use only the dose fields that apply. Direct dose rate is used as entered. Total-dose and concentration modes use exposure weeks for dose reconstruction. CPDB f² uses experiment weeks.
+              Use only the dose fields that apply. Direct dose rate is used as entered. Total-dose and concentration modes use exposure weeks for dose reconstruction. Experiment weeks are used for the lifespan correction.
             </div>
           </div>
         </section>
@@ -1319,7 +1319,7 @@
                 <input id="controlTumors" type="number" min="0" step="1" value="0">
               </div>
               <div>
-                <label for="minWeeks">CPDB half-lifespan flag weeks</label>
+                <label for="minWeeks">Half-lifespan flag weeks</label>
                 <input id="minWeeks" type="number" step="0.1" min="0" value="52">
               </div>
               <div class="check-row" style="margin-top:19px">
@@ -1328,7 +1328,7 @@
               </div>
             </div>
             <div class="method-note">
-              Method: converts incidence to observed-over-control, applies -ln(1 - observed-over-control), applies CPDB f² using experiment duration, fits B as the zero-intercept slope, then reports adjusted TD50 = 0.693 / B.
+              Method: converts incidence to observed-over-control, applies -ln(1 - observed-over-control), applies the lifespan correction using experiment duration, fits B as the zero-intercept slope, then reports TD50 = 0.693 / B.
             </div>
           </div>
         </section>
@@ -1350,8 +1350,8 @@
                     <th>Incidence</th>
                     <th>Dose rate</th>
                     <th>Experiment weeks</th>
-                    <th>CPDB f²</th>
-                    <th>CPDB-adjusted dose</th>
+                    <th>Correction factor</th>
+                    <th>Corrected dose</th>
                     <th>Observed over control</th>
                     <th>Linear y</th>
                     <th>Expected over control</th>
@@ -1373,7 +1373,7 @@
           </div>
           <div class="body">
             <div class="result-card">
-              <div class="mini">CPDB f²-adjusted TD50</div>
+              <div class="mini">TD50</div>
               <div class="metric" id="td50Value">-</div>
               <div class="unit">mg/kg/day</div>
               <div class="status" id="td50Status">Enter incidence and dose data.</div>
@@ -1858,7 +1858,7 @@
 
       if (!Number.isFinite(doseRate) || doseRate < 0) warnings.push(`${row.label || "A row"} has invalid dose.`);
       if (mode !== "rate" && (!exposureWeeks || exposureWeeks <= 0)) warnings.push(`${row.label || "A row"} has invalid exposure weeks for dose reconstruction.`);
-      if (!experimentWeeks || experimentWeeks <= 0) warnings.push(`${row.label || "A row"} has invalid experiment weeks for CPDB f².`);
+      if (!experimentWeeks || experimentWeeks <= 0) warnings.push(`${row.label || "A row"} has invalid experiment weeks for the lifespan correction.`);
       if (!standardWeeks || standardWeeks <= 0) warnings.push("Standard lifespan weeks must be greater than 0.");
 
       const timeCorrection = standardWeeks > 0 ? Math.pow(experimentWeeks / standardWeeks, 2) : NaN;
@@ -2193,7 +2193,7 @@
         ? ["No calculation"]
         : [
             result.method || "Not calculated",
-            `CPDB ${correctionSummary(result.groups)}`,
+            `correction ${correctionSummary(result.groups)}`,
             `p0 ${fmt(result.p0, 3)}`,
             `b ${fmt(result.b, 4)}`,
             `fit RMSE ${fmt(result.fitQuality?.rmse, 4)}`
@@ -2208,7 +2208,7 @@
       el("methodStatus").textContent = result.isEmpty
         ? "Enter the article values, then calculate."
         : Number.isFinite(result.td50)
-        ? "Main TD50 is CPDB f²-adjusted: dose rate is multiplied by (experiment weeks / standard lifespan)^2 before fitting B. The report also shows the no-correction comparator."
+        ? "Main TD50 uses the experiment-duration lifespan correction. The report also shows an uncorrected comparator."
         : "A numeric TD50 needs a finite transformed response above control background.";
 
       const warnList = el("warnings");
@@ -2243,7 +2243,7 @@
       bootBox.innerHTML = bootstrapPlotSvg(bootstrap);
       el("fitPlotSummary").textContent = Number.isFinite(result.td50) ? `TD50 ${fmt(result.td50, 4)}` : "Not calculable";
       el("fitPlotCaption").textContent = Number.isFinite(result.td50)
-        ? "Points show transformed observed responses plotted against CPDB f²-adjusted dose. The fitted line is B; TD50 is where that line reaches 0.693."
+        ? "Points show transformed observed responses plotted against lifespan-corrected dose. The fitted line is B; TD50 is where that line reaches 0.693."
         : "A finite slope above background is needed before plotting a TD50 reference.";
       el("bootstrapPlotSummary").textContent = Number.isFinite(bootstrap.median)
         ? `${fmt(bootstrap.lower, 3)}-${fmt(bootstrap.upper, 3)}`
@@ -2324,7 +2324,7 @@
             <line x1="${margin.left}" y1="${y(0).toFixed(1)}" x2="${margin.left + plotW}" y2="${y(Math.min(lineEndY, yMax)).toFixed(1)}" stroke="#23313e" stroke-width="2.1"></line>
             ${td50Line}
             ${pointSvg}
-            <text x="${margin.left + plotW / 2}" y="${height - 14}" text-anchor="middle" fill="#44505f" font-size="11" font-weight="700">CPDB f²-adjusted dose, mg/kg/day</text>
+            <text x="${margin.left + plotW / 2}" y="${height - 14}" text-anchor="middle" fill="#44505f" font-size="11" font-weight="700">Lifespan-corrected dose, mg/kg/day</text>
             <text x="18" y="${margin.top + plotH / 2}" transform="rotate(-90 18 ${margin.top + plotH / 2})" text-anchor="middle" fill="#44505f" font-size="11" font-weight="700">Linearized response</text>
             <text x="${margin.left}" y="${margin.top + plotH + 22}" text-anchor="middle" fill="#6b7683" font-size="10.5">0</text>
             <text x="${margin.left + plotW}" y="${margin.top + plotH + 22}" text-anchor="middle" fill="#6b7683" font-size="10.5">${escapeHtml(fmtAxis(xMax))}</text>
@@ -2406,8 +2406,8 @@
       if (!factors.length) return "Not available";
       const min = factors[0];
       const max = factors[factors.length - 1];
-      if (Math.abs(max - min) < 1e-9) return `f² ${fmt(min, 5)}`;
-      return `f² range ${fmt(min, 5)} to ${fmt(max, 5)}`;
+      if (Math.abs(max - min) < 1e-9) return `factor ${fmt(min, 5)}`;
+      return `factor range ${fmt(min, 5)} to ${fmt(max, 5)}`;
     }
 
     function adjustmentRatio(result) {
@@ -2429,7 +2429,7 @@
       const controlText = result.app.controlAnimals > 0
         ? "Control tumor counts are also resampled from the entered control background."
         : "Control background is fixed at the entered P0 because no control animal count was provided.";
-      return `${b.iterations} deterministic binomial resamples are generated from the entered tumor proportions and group sizes. ${controlText} For each resample, the same CPDB f²-adjusted doses are retained, B is refitted as the zero-intercept slope, adjusted TD50 is recalculated as 0.693 / B, and the 2.5th and 97.5th percentiles of successful finite fits define the reported 95% interval (${fmt(b.lower, 5)} to ${fmt(b.upper, 5)} mg/kg/day; ${b.successful}/${b.iterations} successful fits).`;
+      return `${b.iterations} deterministic binomial resamples are generated from the entered tumor proportions and group sizes. ${controlText} For each resample, the same lifespan-corrected doses are retained, B is refitted as the zero-intercept slope, TD50 is recalculated as 0.693 / B, and the 2.5th and 97.5th percentiles of successful finite fits define the reported 95% interval (${fmt(b.lower, 5)} to ${fmt(b.upper, 5)} mg/kg/day; ${b.successful}/${b.iterations} successful fits).`;
     }
 
     function renderReport(result) {
@@ -2480,9 +2480,9 @@
         <div class="report-kicker">Calculation report</div>
         <div class="report-title">${escapeHtml(app.compound || "Untitled study")}</div>
         <div class="report-grid">
-          ${reportField("CPDB f²-adjusted TD50", td50, "large")}
-          ${reportField("No f² correction TD50", uncorrectedTd50)}
-          ${reportField("CPDB f² correction", correctionSummary(result.groups))}
+          ${reportField("TD50", td50, "large")}
+          ${reportField("Uncorrected comparator TD50", uncorrectedTd50)}
+          ${reportField("Lifespan correction factor", correctionSummary(result.groups))}
           ${reportField("Adjustment effect", adjustmentRatio(result))}
           ${reportField("Method", result.method || "Not calculated")}
           ${reportField("Endpoint", app.endpoint || "-")}
@@ -2492,7 +2492,7 @@
           ${reportField("Data source article", app.source || "-", "wide")}
           ${reportField("Equation reference", "Gaylor and Gold, Regul Toxicol Pharmacol. 1995;22(1):57-63.", "wide")}
           ${reportField("Background p0", fmt(result.p0, 4))}
-          ${reportField("Adjusted slope b", fmt(result.b, 5))}
+          ${reportField("Corrected slope b", fmt(result.b, 5))}
           ${reportField("Uncorrected slope b", fmt(result.uncorrectedB, 5))}
           ${reportField("Fit RMSE", fmt(result.fitQuality?.rmse, 5))}
           ${reportField("Bootstrap 95% interval", bootstrapInterval, "wide")}
@@ -2519,7 +2519,7 @@
               <tr>
                 <th>Group</th>
                 <th>Incidence</th>
-                <th>CPDB-adjusted dose</th>
+                <th>Corrected dose</th>
                 <th>Observed</th>
                 <th>Linear y</th>
                 <th>Expected</th>
@@ -2534,7 +2534,7 @@
         <div class="report-footnote"><strong>Bootstrap calculation:</strong> ${escapeHtml(bootstrapMethodText(result))}</div>
         <div class="report-footnote">Bootstrap note: the interval resamples tumor counts using the entered group sizes and a fixed seed from the current study fields. It does not include uncertainty from dose reconstruction, survival/life-table adjustment, terminal-sacrifice handling, dose-group selection, pathology adjudication, article selection, tumor subtype grouping, statistical trend testing, or external database model choices.</div>
         <div class="report-footnote">CPDB f² correction: f = experiment time on test / standard lifespan; f² = (experiment weeks / standard lifespan weeks)². The app multiplies each entered dose rate by f² before fitting B. Exposure weeks are used only when reconstructing dose rate from total-dose or concentration inputs. This is equivalent to TD50_adjusted = TD50_uncorrected x f² when all dose rows share the same experiment time. For row-specific experiment times, each row receives its own f².</div>
-        <div class="report-footnote">Formula: observed over control = (P - P0) / (1 - P0); linear y = -ln(1 - observed over control); B is the zero-intercept slope of linear y versus CPDB-adjusted dose; expected over control = 1 - exp(-B x dose); adjusted TD50 = 0.693 / B. Single finite dose-row cases can closely match the earlier one-hit rearrangement because the equations reduce to the same slope. This is an estimate from user-entered article data, not an official CPDB or external database calculation.</div>
+        <div class="report-footnote">Formula: observed over control = (P - P0) / (1 - P0); linear y = -ln(1 - observed over control); B is the zero-intercept slope of linear y versus lifespan-corrected dose; expected over control = 1 - exp(-B x dose); TD50 = 0.693 / B. Single finite dose-row cases can closely match the earlier one-hit rearrangement because the equations reduce to the same slope. This is an estimate from user-entered article data, not an official CPDB or external database calculation.</div>
       `;
     }
 
@@ -2556,11 +2556,11 @@
       lines.push(`Standard lifespan: ${fmt(app.standardWeeks)} weeks`);
       lines.push(`Control/background p0: ${fmt(result.p0, 4)}`);
       lines.push(`Method: ${result.method || "not calculated"}`);
-      lines.push(`CPDB f² correction: ${correctionSummary(result.groups)}`);
-      lines.push(`CPDB f²-adjusted TD50: ${Number.isFinite(result.td50) ? fmt(result.td50, 5) + " mg/kg/day" : "not calculable"}`);
-      lines.push(`No f² correction TD50: ${Number.isFinite(result.uncorrectedTd50) ? fmt(result.uncorrectedTd50, 5) + " mg/kg/day" : "not calculable"}`);
+      lines.push(`Lifespan correction factor: ${correctionSummary(result.groups)}`);
+      lines.push(`TD50: ${Number.isFinite(result.td50) ? fmt(result.td50, 5) + " mg/kg/day" : "not calculable"}`);
+      lines.push(`Uncorrected comparator TD50: ${Number.isFinite(result.uncorrectedTd50) ? fmt(result.uncorrectedTd50, 5) + " mg/kg/day" : "not calculable"}`);
       lines.push(`Adjustment effect: ${adjustmentRatio(result)}`);
-      lines.push(`Adjusted slope b: ${fmt(result.b, 5)}`);
+      lines.push(`Corrected slope b: ${fmt(result.b, 5)}`);
       lines.push(`Uncorrected slope b: ${fmt(result.uncorrectedB, 5)}`);
       lines.push(`Fit RMSE: ${fmt(result.fitQuality?.rmse, 5)}`);
       if (Number.isFinite(result.bootstrap?.lower) && Number.isFinite(result.bootstrap?.upper)) {
@@ -2582,7 +2582,7 @@
       lines.push("");
       lines.push("Rows:");
       result.groups.forEach((g) => {
-        lines.push(`- ${g.label}: ${g.tumors}/${g.animals}; exposure weeks ${fmt(g.weeks, 5)}; experiment weeks ${fmt(g.experimentWeeks, 5)}; dose rate ${fmt(g.doseRate)} mg/kg/day; CPDB f² ${fmt(g.timeCorrection, 5)}; CPDB-adjusted dose ${fmt(g.effectiveDose)} mg/kg/day; observed over control ${fmt(g.observedOverControl, 5)}; linear y ${fmt(g.linearY, 5)}; expected over control ${fmt(g.expectedOverControl, 5)}; residual ${fmt(g.residual, 5)}`);
+        lines.push(`- ${g.label}: ${g.tumors}/${g.animals}; exposure weeks ${fmt(g.weeks, 5)}; experiment weeks ${fmt(g.experimentWeeks, 5)}; dose rate ${fmt(g.doseRate)} mg/kg/day; correction factor ${fmt(g.timeCorrection, 5)}; corrected dose ${fmt(g.effectiveDose)} mg/kg/day; observed over control ${fmt(g.observedOverControl, 5)}; linear y ${fmt(g.linearY, 5)}; expected over control ${fmt(g.expectedOverControl, 5)}; residual ${fmt(g.residual, 5)}`);
       });
       if (app.notes) {
         lines.push("");
@@ -2595,7 +2595,7 @@
       }
       lines.push("");
       lines.push("CPDB f² correction: f = experiment time on test / standard lifespan; f² = (experiment weeks / standard lifespan weeks)^2. The app multiplies each entered dose rate by f² before fitting B. Exposure weeks are used only when reconstructing dose rate from total-dose or concentration inputs. This is equivalent to TD50_adjusted = TD50_uncorrected x f² when all dose rows share the same experiment time. For row-specific experiment times, each row receives its own f².");
-      lines.push("Formula: observed over control = (P - P0) / (1 - P0); linear y = -ln(1 - observed over control); B is the zero-intercept slope of linear y versus CPDB-adjusted dose; expected over control = 1 - exp(-B x dose); adjusted TD50 = 0.693 / B.");
+      lines.push("Formula: observed over control = (P - P0) / (1 - P0); linear y = -ln(1 - observed over control); B is the zero-intercept slope of linear y versus lifespan-corrected dose; expected over control = 1 - exp(-B x dose); TD50 = 0.693 / B.");
       lines.push(`Bootstrap calculation: ${bootstrapMethodText(result)}`);
       lines.push("Bootstrap note: the interval resamples tumor counts using the entered group sizes and a fixed seed from the current study fields. It does not include uncertainty from dose reconstruction, survival/life-table adjustment, terminal-sacrifice handling, dose-group selection, pathology adjudication, article selection, tumor subtype grouping, statistical trend testing, or external database model choices.");
       lines.push("Note: single finite dose-row cases can closely match the earlier one-hit rearrangement because the equations reduce to the same slope.");
