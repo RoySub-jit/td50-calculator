@@ -1,0 +1,2818 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'">
+  <title>TD50 Calculator</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #e7edf0;
+      --surface: #ffffff;
+      --surface-soft: #f6f8f9;
+      --surface-gloss: #fbfcfd;
+      --ink: #17212c;
+      --muted: #5d6875;
+      --subtle: #7a8591;
+      --line: #d7dee3;
+      --line-strong: #aab5bf;
+      --navy: #23313e;
+      --navy-deep: #152431;
+      --navy-gloss: #2c4354;
+      --teal: #08746f;
+      --teal-dark: #075a56;
+      --teal-soft: #e7f3f2;
+      --gold: #9b7a2f;
+      --wine: #7a2d3c;
+      --warn: #8a5b00;
+      --bad: #b3261e;
+      --good: #126c47;
+      --input: #ffffff;
+      --shadow: 0 18px 42px rgba(22, 35, 48, 0.11);
+      --shadow-soft: 0 8px 22px rgba(22, 35, 48, 0.08);
+      --shadow-deep: 0 26px 60px rgba(12, 24, 36, 0.22);
+      --ring: 0 0 0 4px rgba(8, 116, 111, 0.14);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #f9fbfc 0%, #eaf0f3 42%, #dfe8ec 100%);
+      letter-spacing: 0;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    header {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      min-height: 74px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      background:
+        linear-gradient(145deg, #10202e 0%, #243849 52%, #0b6863 100%);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-deep);
+      overflow: hidden;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, #ffffff, #56c4bc, #d7c07a);
+      opacity: 0.9;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      inset: 3px 0 auto;
+      height: 56px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+      pointer-events: none;
+    }
+
+    .title-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 280px;
+      width: 100%;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #ffffff, #dbe9ec 55%, #9fc9c5);
+      color: var(--navy-deep);
+      font-size: 13px;
+      font-weight: 800;
+      flex: 0 0 auto;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 24px rgba(21, 36, 49, 0.22);
+    }
+
+    .title-copy {
+      min-width: 0;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 7px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 22px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 11px;
+      font-weight: 650;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .status-chip::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #76d6ce;
+      box-shadow: 0 0 0 3px rgba(118, 214, 206, 0.14);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.15;
+      font-weight: 760;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.76);
+    }
+
+    .toolbar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-separator {
+      width: 1px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    button, .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f6f8f9 100%);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+      min-height: 34px;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(22, 35, 48, 0.06);
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    .file-label {
+      margin-bottom: 0;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    button:hover, .file-label:hover {
+      border-color: var(--teal);
+      color: var(--teal-dark);
+      background: linear-gradient(180deg, #ffffff 0%, var(--teal-soft) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 6px 14px rgba(8, 116, 111, 0.10);
+    }
+
+    button:active, .file-label:active {
+      transform: translateY(1px);
+    }
+
+    button.primary {
+      background: linear-gradient(180deg, #0d837d 0%, var(--teal-dark) 100%);
+      color: #fff;
+      border-color: var(--teal);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 18px rgba(8, 116, 111, 0.18);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(180deg, #0b7772 0%, #064b48 100%);
+      color: #fff;
+    }
+
+    button.danger {
+      color: var(--bad);
+    }
+
+    header button,
+    header .file-label {
+      border-color: rgba(255, 255, 255, 0.23);
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    header button:hover,
+    header .file-label:hover {
+      border-color: rgba(255, 255, 255, 0.42);
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    header button.primary {
+      border-color: rgba(96, 219, 210, 0.84);
+      background: linear-gradient(180deg, #13a098 0%, #08746f 100%);
+      color: #ffffff;
+    }
+
+    header button.danger {
+      color: #ffd9d9;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .layout > main,
+    .layout > aside,
+    section,
+    .body,
+    .table-wrap {
+      min-width: 0;
+    }
+
+    section {
+      position: relative;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    section::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.85), rgba(8, 116, 111, 0.22), rgba(155, 122, 47, 0.2));
+      pointer-events: none;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 48px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fbfcfd 0%, var(--surface-soft) 100%);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.2;
+      font-weight: 760;
+      color: var(--navy);
+    }
+
+    .section-title {
+      min-width: 0;
+    }
+
+    .section-subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .body {
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid.cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid.cols-4.study-grid {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.8fr) minmax(0, 0.9fr) minmax(0, 1fr);
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #44505f;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid var(--line-strong);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+      color: var(--ink);
+      border-radius: 6px;
+      padding: 8px 9px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 450;
+      box-shadow: inset 0 1px 2px rgba(22, 35, 48, 0.04);
+      transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+      line-height: 1.35;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: var(--ring), inset 0 1px 2px rgba(22, 35, 48, 0.04);
+      background: #ffffff;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      font-size: 13px;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .check-row input {
+      width: 16px;
+      min-height: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      vertical-align: middle;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      font-size: 11px;
+      color: #2d3846;
+      font-weight: 760;
+      background: linear-gradient(180deg, #f2f7f7 0%, #e7f0ef 100%);
+    }
+
+    td input, td select {
+      min-height: 32px;
+      font-size: 12px;
+      padding: 5px 6px;
+      border-radius: 5px;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #fbfcfd;
+    }
+
+    tbody tr:hover td {
+      background: #f5faf9;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      width: 100%;
+      max-width: 100%;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    }
+
+    .table-wrap table {
+      border: 0;
+      min-width: 1160px;
+    }
+
+    .table-wrap th:first-child, .table-wrap td:first-child {
+      border-left: 0;
+    }
+
+    .table-wrap th:last-child, .table-wrap td:last-child {
+      border-right: 0;
+    }
+
+    aside {
+      position: sticky;
+      top: 18px;
+    }
+
+    .result-card {
+      padding: 0 0 15px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .result-card:first-child {
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, #162735 0%, #2d4557 58%, #0b6f69 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 16px 32px rgba(22, 39, 53, 0.18);
+    }
+
+    .result-card:last-of-type {
+      border-bottom: 0;
+    }
+
+    .metric {
+      font-size: 36px;
+      font-weight: 780;
+      line-height: 1.1;
+      margin-top: 3px;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-card:first-child .metric {
+      color: #ffffff;
+    }
+
+    .result-card:first-child .mini,
+    .result-card:first-child .unit,
+    .result-card:first-child .status {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .result-card:first-child .status.good {
+      color: #9ff0c9;
+    }
+
+    .result-card:first-child .status.warn {
+      color: #f4d28c;
+    }
+
+    .result-card:first-child .status.bad {
+      color: #ffb3ad;
+    }
+
+    .unit {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .status {
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .status.good {
+      color: var(--good);
+    }
+
+    .status.warn {
+      color: var(--warn);
+    }
+
+    .status.bad {
+      color: var(--bad);
+    }
+
+    .mini {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+      font-weight: 650;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .inline-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      color: #334052;
+      background: linear-gradient(180deg, #ffffff 0%, #f5f8f9 100%);
+      margin: 3px 4px 0 0;
+      font-weight: 650;
+    }
+
+    .warn-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--warn);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .warn-list li + li {
+      margin-top: 4px;
+    }
+
+    .plot-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbfb 100%);
+      padding: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .plot-card + .plot-card {
+      margin-top: 12px;
+    }
+
+    .plot-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .plot-title span:last-child {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .plot-box {
+      width: 100%;
+      min-height: 236px;
+      border: 1px solid #dce5e8;
+      border-radius: 7px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .plot-box svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 236px;
+    }
+
+    .plot-caption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .method-note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: linear-gradient(180deg, #ffffff 0%, #f6faf9 100%);
+      color: #435061;
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .report {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+      border: 1px solid #cad4db;
+      border-radius: var(--radius);
+      padding: 16px;
+      max-height: none;
+      overflow-x: auto;
+      overflow-y: visible;
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .report-empty {
+      padding: 20px 14px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafb 100%);
+    }
+
+    .report-kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      font-weight: 760;
+      color: var(--teal-dark);
+      margin-bottom: 4px;
+    }
+
+    .report-title {
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 760;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      border-top: 1px solid var(--line);
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .report-field {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 2px;
+      min-width: 0;
+    }
+
+    .report-field.large {
+      display: block;
+      padding: 0 0 10px;
+      margin-bottom: 2px;
+    }
+
+    .report-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      font-weight: 760;
+      color: var(--subtle);
+      margin-top: 1px;
+    }
+
+    .report-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
+
+    .report-value.large {
+      font-size: 27px;
+      line-height: 1.1;
+      color: var(--navy);
+      margin-top: 3px;
+      font-weight: 780;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+      min-width: 660px;
+      margin-top: 12px;
+      font-size: 11.5px;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .report-table th,
+    .report-table td {
+      padding: 7px;
+      border: 1px solid var(--line);
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .report-footnote {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
+    .report-visuals {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .calc-step-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .calc-step {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #ffffff;
+      padding: 10px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .calc-step-title {
+      color: var(--navy);
+      font-size: 12.5px;
+      font-weight: 760;
+      margin-bottom: 8px;
+    }
+
+    .calc-step-grid {
+      display: grid;
+      grid-template-columns: 108px minmax(0, 1fr);
+      gap: 6px 10px;
+      align-items: start;
+    }
+
+    .calc-step-label {
+      color: var(--subtle);
+      font-size: 10px;
+      line-height: 1.25;
+      font-weight: 760;
+      text-transform: uppercase;
+    }
+
+    .calc-step-value {
+      color: var(--ink);
+      font-size: 11.5px;
+      line-height: 1.35;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .app-credit {
+      margin: 12px 3px 0;
+      color: #6f7b8b;
+      font-size: 11px;
+      line-height: 1.35;
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .method-dialog {
+      width: min(780px, calc(100vw - 32px));
+      max-height: calc(100vh - 44px);
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: transparent;
+      box-shadow: var(--shadow-deep);
+    }
+
+    .method-dialog::backdrop {
+      background: rgba(12, 24, 36, 0.54);
+      backdrop-filter: blur(6px);
+    }
+
+    .dialog-panel {
+      overflow: hidden;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 250, 250, 0.98) 100%);
+    }
+
+    .dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px;
+      background: linear-gradient(145deg, #142532 0%, #2e4556 58%, #0b6a65 100%);
+      color: #ffffff;
+    }
+
+    .dialog-kicker {
+      margin-bottom: 4px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 11px;
+      font-weight: 760;
+      text-transform: uppercase;
+    }
+
+    .dialog-head h2 {
+      color: #ffffff;
+      font-size: 18px;
+    }
+
+    .dialog-head .mini {
+      margin-top: 6px;
+      color: rgba(255, 255, 255, 0.74);
+    }
+
+    .dialog-body {
+      padding: 18px;
+      overflow: auto;
+      max-height: calc(100vh - 160px);
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .method-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbfb 100%);
+      padding: 13px;
+    }
+
+    .method-card.wide {
+      grid-column: 1 / -1;
+    }
+
+    .method-card h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--navy);
+    }
+
+    .method-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .equation-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #253241;
+    }
+
+    .equation-list code {
+      display: block;
+      padding: 7px 8px;
+      border: 1px solid #dce5e8;
+      border-radius: 6px;
+      background: #f8fafb;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    ::selection {
+      background: rgba(8, 116, 111, 0.18);
+    }
+
+    ::placeholder {
+      color: #9aa4ae;
+    }
+
+    .table-wrap::-webkit-scrollbar,
+    .report::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .table-wrap::-webkit-scrollbar-track,
+    .report::-webkit-scrollbar-track {
+      background: #f1f4f5;
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb,
+    .report::-webkit-scrollbar-thumb {
+      background: #bcc8cf;
+      border: 2px solid #f1f4f5;
+      border-radius: 999px;
+    }
+
+    @media (max-width: 520px) {
+      .report-field {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .method-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: var(--navy);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1050px) {
+      body {
+        padding: 12px;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px;
+      }
+
+      .title-wrap {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .toolbar-separator {
+        display: none;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+
+      .grid.cols-4, .grid.cols-3, .grid.cols-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .metric {
+        font-size: 26px;
+      }
+
+      .app-credit {
+        text-align: left;
+      }
+    }
+
+    @media print {
+      @page {
+        margin: 0.55in;
+      }
+
+      body {
+        background: #fff;
+        padding: 0;
+        color: #111827;
+      }
+
+      .toolbar, button, .file-label, .inline-actions, .toast {
+        display: none !important;
+      }
+
+      section {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      body.print-report header,
+      body.print-report main,
+      body.print-report aside > section:not(#reportSection),
+      body.print-report footer,
+      body.print-report .toast {
+        display: none !important;
+      }
+
+      body.print-report .app {
+        max-width: none;
+      }
+
+      body.print-report aside {
+        position: static;
+      }
+
+      body.print-report #reportSection {
+        display: block !important;
+        margin: 0;
+        border: 0;
+        box-shadow: none;
+      }
+
+      body.print-report #reportSection .section-head {
+        display: none;
+      }
+
+      body.print-report #reportBox {
+        max-height: none;
+        overflow: visible;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        font-size: 10.5pt;
+        line-height: 1.35;
+      }
+
+      body.print-report .report-grid {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      body.print-report .report-visuals {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      body.print-report .report-table {
+        break-inside: auto;
+        page-break-inside: auto;
+        min-width: 0;
+        table-layout: fixed;
+        font-size: 8.5pt;
+      }
+
+      body.print-report .report-table thead {
+        display: table-header-group;
+      }
+
+      body.print-report .report-table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      body.print-report .calc-step {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      body.print-report .calc-step-grid {
+        grid-template-columns: 1.2in minmax(0, 1fr);
+      }
+
+      body.print-report .plot-box {
+        min-height: auto;
+        overflow: visible;
+      }
+
+      body.print-report .plot-box svg {
+        min-height: auto;
+        max-height: 3.2in;
+      }
+
+      body.print-report .report-footnote {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title-wrap">
+        <div class="brand-mark" aria-hidden="true">TD</div>
+        <div class="title-copy">
+          <h1>TD50 Calculator</h1>
+          <div class="subtitle">CPDB-style estimator for article-derived tumor-incidence data</div>
+          <div class="header-meta" aria-label="Application status">
+            <span class="status-chip">Offline</span>
+            <span class="status-chip">No network calls</span>
+            <span class="status-chip">Local save only</span>
+          </div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="primary" id="calculateTop">Calculate</button>
+          <button id="copyReportTop">Copy report</button>
+          <button id="exportPdfTop">Export PDF</button>
+        </div>
+        <div class="toolbar-separator" aria-hidden="true"></div>
+        <div class="toolbar-group">
+          <button id="exportJson">Save Study File</button>
+          <label class="file-label" for="importJson">Open Study File</label>
+          <input id="importJson" type="file" accept="application/json,.json">
+        </div>
+        <div class="toolbar-separator" aria-hidden="true"></div>
+        <div class="toolbar-group">
+          <button id="aboutMethod">About / Method</button>
+          <button id="loadExample">Load example</button>
+          <button class="danger" id="clearAll">Clear</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main>
+        <section>
+          <div class="section-head">
+            <div class="section-title">
+              <h2>1. Study Definition</h2>
+              <div class="section-subtitle">Compound identity, endpoint, species, route, and article provenance</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="grid cols-4 study-grid">
+              <div>
+                <label for="compound">Compound</label>
+                <input id="compound" placeholder="Compound name">
+              </div>
+              <div>
+                <label for="endpoint">Endpoint / tumor site</label>
+                <input id="endpoint" placeholder="Tumor site / endpoint">
+              </div>
+              <div>
+                <label for="species">Species</label>
+                <select id="species">
+                  <option value="rat" selected>Rat</option>
+                  <option value="mouse">Mouse</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="standardWeeks">Standard lifespan weeks</label>
+                <input id="standardWeeks" type="number" step="0.1" min="1" value="104">
+              </div>
+            </div>
+            <div class="grid cols-3" style="margin-top:12px">
+              <div>
+                <label for="strainSex">Strain / sex</label>
+                <input id="strainSex" value="">
+              </div>
+              <div>
+                <label for="route">Route</label>
+                <input id="route" placeholder="Route of administration">
+              </div>
+              <div>
+                <label for="source">Data source article / page</label>
+                <input id="source" value="">
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <label for="notes">Notes</label>
+              <textarea id="notes"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <div class="section-title">
+              <h2>2. Dose And Incidence Rows</h2>
+              <div class="section-subtitle">One row per control or treated group reported in the source article</div>
+            </div>
+            <div class="inline-actions">
+              <button id="addRow">Add row</button>
+              <button id="removeLastRow">Remove last</button>
+            </div>
+          </div>
+          <div class="body">
+            <div class="table-wrap">
+              <table id="groupsTable">
+                <thead>
+                  <tr>
+                    <th style="width:130px">Group</th>
+                    <th style="width:72px">Animals</th>
+                    <th style="width:72px">Tumors</th>
+                    <th style="width:110px">Exposure weeks</th>
+                    <th style="width:118px">Experiment weeks</th>
+                    <th style="width:100px">Body weight kg</th>
+                    <th style="width:128px">Dose mode</th>
+                    <th style="width:125px">Total mg / animal</th>
+                    <th style="width:125px">Dose rate mg/kg/day</th>
+                    <th style="width:115px">Concentration mg/L</th>
+                    <th style="width:105px">Intake mL/day</th>
+                    <th style="width:112px">Dosing weeks</th>
+                    <th style="width:90px">Days / week</th>
+                    <th style="width:64px"></th>
+                  </tr>
+                </thead>
+                <tbody id="groupRows"></tbody>
+              </table>
+            </div>
+            <div class="mini" style="margin-top:8px">
+              Use only the dose fields that apply. Direct dose rate is used as entered. Total-dose and concentration modes use exposure weeks for dose reconstruction. CPDB f² uses experiment weeks.
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <div class="section-title">
+              <h2>3. Control And Model Settings</h2>
+              <div class="section-subtitle">Background tumor rate, lifespan correction, and model guardrails</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="grid cols-4">
+              <div>
+                <label for="controlAnimals">Control animals</label>
+                <input id="controlAnimals" type="number" min="0" step="1" value="0">
+              </div>
+              <div>
+                <label for="controlTumors">Control tumors</label>
+                <input id="controlTumors" type="number" min="0" step="1" value="0">
+              </div>
+              <div>
+                <label for="minWeeks">CPDB half-lifespan flag weeks</label>
+                <input id="minWeeks" type="number" step="0.1" min="0" value="52">
+              </div>
+              <div class="check-row" style="margin-top:19px">
+                <input id="allowExtreme" type="checkbox">
+                <span>Use continuity correction for 0/n or n/n</span>
+              </div>
+            </div>
+            <div class="method-note">
+              Method: converts incidence to observed-over-control, applies -ln(1 - observed-over-control), applies CPDB f² using experiment duration, fits B as the zero-intercept slope, then reports adjusted TD50 = 0.693 / B.
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <div class="section-title">
+              <h2>4. Calculation Audit</h2>
+              <div class="section-subtitle">Transformed response, fitted expectation, and residuals</div>
+            </div>
+            <button id="exportCsv">Export CSV</button>
+          </div>
+          <div class="body">
+            <div class="table-wrap">
+              <table id="auditTable">
+                <thead>
+                  <tr>
+                    <th>Group</th>
+                    <th>Incidence</th>
+                    <th>Dose rate</th>
+                    <th>Experiment weeks</th>
+                    <th>CPDB f²</th>
+                    <th>CPDB-adjusted dose</th>
+                    <th>Observed over control</th>
+                    <th>Linear y</th>
+                    <th>Expected over control</th>
+                    <th>Residual</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody id="auditRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside>
+        <section>
+          <div class="section-head">
+            <h2>Result</h2>
+          </div>
+          <div class="body">
+            <div class="result-card">
+              <div class="mini">CPDB f²-adjusted TD50</div>
+              <div class="metric" id="td50Value">-</div>
+              <div class="unit">mg/kg/day</div>
+              <div class="status" id="td50Status">Enter incidence and dose data.</div>
+            </div>
+            <div class="result-card">
+              <div class="mini">Method</div>
+              <div id="methodPills"></div>
+              <div class="status" id="methodStatus"></div>
+              <ul class="warn-list" id="warnings"></ul>
+            </div>
+            <div class="inline-actions">
+              <button class="primary" id="calculateSide">Calculate</button>
+              <button id="copyReportSide">Copy report</button>
+              <button id="exportPdfSide">Export PDF</button>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <h2>Visual Check</h2>
+          </div>
+          <div class="body">
+            <div class="plot-card">
+              <div class="plot-title">
+                <span>Linearized Fit</span>
+                <span id="fitPlotSummary">Not calculated</span>
+              </div>
+              <div class="plot-box" id="fitPlotBox"></div>
+              <div class="plot-caption" id="fitPlotCaption">Enter study rows to view the fitted slope and TD50 reference.</div>
+            </div>
+            <div class="plot-card">
+              <div class="plot-title">
+                <span>Bootstrap TD50</span>
+                <span id="bootstrapPlotSummary">Not calculated</span>
+              </div>
+              <div class="plot-box" id="bootstrapPlotBox"></div>
+              <div class="plot-caption" id="bootstrapPlotCaption">Bootstrap interval appears after a finite TD50 is calculated.</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="reportSection">
+          <div class="section-head">
+            <h2>Report</h2>
+            <button id="exportPdfReport">Export PDF</button>
+          </div>
+          <div class="body">
+            <div class="report" id="reportBox"></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+    <footer class="app-credit">
+      Developed by Subhajit Roy.
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <dialog class="method-dialog" id="methodDialog" aria-labelledby="methodDialogTitle">
+    <div class="dialog-panel">
+      <div class="dialog-head">
+        <div>
+          <div class="dialog-kicker">About / Method</div>
+          <h2 id="methodDialogTitle">TD50 Calculator</h2>
+          <div class="mini">Developed by Subhajit Roy.</div>
+        </div>
+        <button id="closeMethod" type="button">Close</button>
+      </div>
+      <div class="dialog-body">
+        <div class="method-grid">
+          <div class="method-card">
+            <h3>Study File</h3>
+            <p>Save Study File exports the current inputs as a local JSON study file. Open Study File restores that saved calculation later for review or continuation.</p>
+          </div>
+          <div class="method-card">
+            <h3>CPDB f² Lifespan Correction</h3>
+            <p>The calculator applies the CPDB lifespan correction to dose before fitting the response. CPDB describes f as experiment time divided by standard lifespan, with 2 years used for rats, mice, and hamsters. Exposure duration is retained separately for dose reconstruction, but experiment duration is used for f². Applying the correction to dose before fitting is mathematically equivalent to reporting the fitted TD50 multiplied by f² when all rows share the same experiment duration.</p>
+            <div class="equation-list">
+              <code>f = experiment time on test / standard lifespan</code>
+              <code>CPDB f² = (experiment weeks / standard lifespan weeks)^2</code>
+              <code>CPDB-adjusted dose = dose rate x f²</code>
+              <code>reported TD50 = 0.693 / B fitted against CPDB-adjusted dose</code>
+              <code>default standard lifespan = 104 weeks</code>
+              <code>default half-lifespan flag = 52 weeks</code>
+            </div>
+          </div>
+          <div class="method-card wide">
+            <h3>Dose Inputs</h3>
+            <div class="equation-list">
+              <code>direct dose mode: dose rate is used as entered in mg/kg/day</code>
+              <code>total-dose mode: dose rate = total mg / (body weight kg x exposure weeks x 7)</code>
+              <code>concentration mode: total mg = concentration mg/L x intake L/day x dosing weeks x days/week</code>
+            </div>
+          </div>
+          <div class="method-card wide">
+            <h3>TD50 Method</h3>
+            <div class="equation-list">
+              <code>P = treated tumor proportion; P0 = control tumor proportion</code>
+              <code>observed over control = (P - P0) / (1 - P0)</code>
+              <code>linear y = -ln(1 - observed over control)</code>
+              <code>B = zero-intercept slope of linear y versus effective dose</code>
+              <code>expected over control = 1 - exp(-B x dose)</code>
+              <code>TD50 = 0.693 / B</code>
+            </div>
+            <p style="margin-top:10px">The fit plot shows the linearized form of the one-hit model, not a raw tumor-incidence curve. The points are transformed article responses, the line is the fitted slope B forced through zero, and the TD50 is the dose where that line reaches 0.693.</p>
+          </div>
+          <div class="method-card wide">
+            <h3>Bootstrap Plot And PDF Report</h3>
+            <p>The bootstrap resamples tumor counts within the entered group sizes using a deterministic seed from the study inputs. It reflects incidence-count uncertainty only; dose selection, pathology calls, survival adjustment, and model-form uncertainty are not included. Export PDF opens the browser print flow so the report can be saved as a PDF on Mac or Windows.</p>
+          </div>
+          <div class="method-card wide">
+            <h3>Why External Database Values May Differ</h3>
+            <p>External TD50 databases may account for additional study-specific handling that this transparent article-entry calculator does not reproduce: dose-group exclusion or selection, poor-fit flags, intercurrent-mortality or life-table treatment, terminal-sacrifice summary methods, single-concentration rows where a database may not calculate TD50, saturated treated incidences, no dose-response decisions, tumor subtype handling, and database-specific statistical trend tests or confidence intervals.</p>
+          </div>
+          <div class="method-card wide">
+            <h3>Reference And Caveat</h3>
+            <p>Equation reference: Gaylor and Gold. Quick estimate of the regulatory virtually safe dose based on the maximum tolerated dose for rodent bioassays. Regul Toxicol Pharmacol. 1995;22(1):57-63. This tool estimates from user-entered article data and is not an official CPDB, regulatory, or externally validated calculation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = "td50-calculator-v8";
+    const TD50_NUMERATOR = 0.693;
+    const BOOTSTRAP_ITERATIONS = 1000;
+
+    const state = {
+      rows: []
+    };
+    let calculationFrame = null;
+
+    const el = (id) => document.getElementById(id);
+
+    function num(value, fallback = NaN) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    function fmt(value, digits = 4) {
+      if (!Number.isFinite(value)) return "-";
+      if (value === 0) return "0";
+      const abs = Math.abs(value);
+      if (abs >= 1000 || abs < 0.001) return value.toExponential(3);
+      return Number(value.toPrecision(digits)).toString();
+    }
+
+    function fmtAxis(value) {
+      if (!Number.isFinite(value)) return "";
+      if (value === 0) return "0";
+      const abs = Math.abs(value);
+      if (abs >= 1000 || abs < 0.01) return value.toExponential(1);
+      if (abs < 1) return Number(value.toPrecision(2)).toString();
+      return Number(value.toPrecision(3)).toString();
+    }
+
+    function quantile(sortedValues, q) {
+      if (!sortedValues.length) return NaN;
+      const pos = (sortedValues.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      const next = sortedValues[base + 1];
+      return Number.isFinite(next) ? sortedValues[base] + rest * (next - sortedValues[base]) : sortedValues[base];
+    }
+
+    function hashString(value) {
+      let hash = 2166136261;
+      const text = String(value);
+      for (let i = 0; i < text.length; i += 1) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return hash >>> 0;
+    }
+
+    function seededRandom(seed) {
+      let value = seed >>> 0;
+      return () => {
+        value += 0x6D2B79F5;
+        let t = value;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function drawBinomial(n, p, random) {
+      if (!Number.isFinite(n) || n <= 0) return 0;
+      const trials = Math.round(n);
+      const prob = Math.min(1, Math.max(0, Number.isFinite(p) ? p : 0));
+      let x = 0;
+      for (let i = 0; i < trials; i += 1) {
+        if (random() < prob) x += 1;
+      }
+      return x;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function toast(message) {
+      const box = el("toast");
+      box.textContent = message;
+      box.classList.add("show");
+      window.setTimeout(() => box.classList.remove("show"), 1700);
+    }
+
+    function scheduleCalculate() {
+      if (calculationFrame) cancelAnimationFrame(calculationFrame);
+      calculationFrame = requestAnimationFrame(() => {
+        calculationFrame = null;
+        calculate();
+      });
+    }
+
+    function defaultRows() {
+      return [
+        {
+          label: "",
+          animals: "",
+          tumors: "",
+          weeks: "",
+          experimentWeeks: "",
+          bw: "",
+          mode: "total",
+          totalMg: "",
+          doseRate: "",
+          concentration: "",
+          intake: "",
+          dosingWeeks: "",
+          daysPerWeek: ""
+        }
+      ];
+    }
+
+    function blankState() {
+      return {
+        compound: "",
+        endpoint: "",
+        species: "rat",
+        standardWeeks: 104,
+        strainSex: "",
+        route: "",
+        source: "",
+        notes: "",
+        controlAnimals: 0,
+        controlTumors: 0,
+        minWeeks: 52,
+        allowExtreme: false,
+        rows: defaultRows()
+      };
+    }
+
+    function exampleState() {
+      return {
+        compound: "AcNM2PIPz",
+        endpoint: "Esophagus carcinomas",
+        species: "rat",
+        standardWeeks: 104,
+        strainSex: "Female F344 rat",
+        route: "Drinking water",
+        source: "Singer et al. 1981, Table 1 and Table 2",
+        notes: "Example based on total dose 390 mg/rat, 40 weeks exposure/experiment time, 16/20 esophagus carcinomas.",
+        controlAnimals: 0,
+        controlTumors: 0,
+        minWeeks: 52,
+        allowExtreme: false,
+        rows: [
+          {
+            label: "AcNM2PIPz",
+            animals: 20,
+            tumors: 16,
+            weeks: 40,
+            experimentWeeks: 40,
+            bw: 0.25,
+            mode: "total",
+            totalMg: 390,
+            doseRate: "",
+            concentration: "",
+            intake: "",
+            dosingWeeks: "",
+            daysPerWeek: 7
+          }
+        ]
+      };
+    }
+
+    function loadApp(data) {
+      const d = data || blankState();
+      el("compound").value = d.compound ?? "";
+      el("endpoint").value = d.endpoint ?? "";
+      el("species").value = d.species ?? "rat";
+      el("standardWeeks").value = d.standardWeeks ?? 104;
+      el("strainSex").value = d.strainSex ?? "";
+      el("route").value = d.route ?? "";
+      el("source").value = d.source ?? "";
+      el("notes").value = d.notes ?? "";
+      el("controlAnimals").value = d.controlAnimals ?? 0;
+      el("controlTumors").value = d.controlTumors ?? 0;
+      el("minWeeks").value = d.minWeeks ?? 52;
+      el("allowExtreme").checked = Boolean(d.allowExtreme);
+      state.rows = Array.isArray(d.rows) && d.rows.length
+        ? d.rows.map((row) => ({
+            ...row,
+            experimentWeeks: row.experimentWeeks ?? row.weeks ?? ""
+          }))
+        : defaultRows();
+      renderRows();
+      calculate();
+    }
+
+    function readApp() {
+      readRowsFromDom();
+      return {
+        compound: el("compound").value.trim(),
+        endpoint: el("endpoint").value.trim(),
+        species: el("species").value,
+        standardWeeks: num(el("standardWeeks").value, 104),
+        strainSex: el("strainSex").value.trim(),
+        route: el("route").value.trim(),
+        source: el("source").value.trim(),
+        notes: el("notes").value.trim(),
+        controlAnimals: num(el("controlAnimals").value, 0),
+        controlTumors: num(el("controlTumors").value, 0),
+        minWeeks: num(el("minWeeks").value, 52),
+        allowExtreme: el("allowExtreme").checked,
+        rows: state.rows
+      };
+    }
+
+    function saveApp() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(readApp()));
+    }
+
+    function renderRows() {
+      const body = el("groupRows");
+      body.innerHTML = "";
+      state.rows.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        tr.dataset.index = index;
+        tr.innerHTML = `
+          <td><input data-field="label" value="${escapeHtml(row.label)}"></td>
+          <td><input data-field="animals" type="number" min="0" step="1" value="${escapeHtml(row.animals)}"></td>
+          <td><input data-field="tumors" type="number" min="0" step="1" value="${escapeHtml(row.tumors)}"></td>
+          <td><input data-field="weeks" type="number" min="0" step="0.1" value="${escapeHtml(row.weeks)}"></td>
+          <td><input data-field="experimentWeeks" type="number" min="0" step="0.1" value="${escapeHtml(row.experimentWeeks ?? row.weeks ?? "")}"></td>
+          <td><input data-field="bw" type="number" min="0" step="0.001" value="${escapeHtml(row.bw)}"></td>
+          <td>
+            <select data-field="mode">
+              <option value="total"${row.mode === "total" ? " selected" : ""}>Total mg</option>
+              <option value="rate"${row.mode === "rate" ? " selected" : ""}>Dose rate</option>
+              <option value="conc"${row.mode === "conc" ? " selected" : ""}>Concentration</option>
+            </select>
+          </td>
+          <td><input data-field="totalMg" type="number" min="0" step="0.0001" value="${escapeHtml(row.totalMg)}"></td>
+          <td><input data-field="doseRate" type="number" min="0" step="0.0001" value="${escapeHtml(row.doseRate)}"></td>
+          <td><input data-field="concentration" type="number" min="0" step="0.0001" value="${escapeHtml(row.concentration)}"></td>
+          <td><input data-field="intake" type="number" min="0" step="0.0001" value="${escapeHtml(row.intake)}"></td>
+          <td><input data-field="dosingWeeks" type="number" min="0" step="0.1" value="${escapeHtml(row.dosingWeeks)}"></td>
+          <td><input data-field="daysPerWeek" type="number" min="0" max="7" step="0.1" value="${escapeHtml(row.daysPerWeek)}"></td>
+          <td><button class="danger" data-remove="${index}" title="Remove row">Remove</button></td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function readRowsFromDom() {
+      const rows = [];
+      el("groupRows").querySelectorAll("tr").forEach((tr) => {
+        const row = {};
+        tr.querySelectorAll("input, select").forEach((input) => {
+          const field = input.dataset.field;
+          row[field] = input.value;
+        });
+        row.label = row.label || "";
+        row.hasInput = [
+          "label",
+          "animals",
+          "tumors",
+          "weeks",
+          "experimentWeeks",
+          "bw",
+          "totalMg",
+          "doseRate",
+          "concentration",
+          "intake",
+          "dosingWeeks",
+          "daysPerWeek"
+        ].some((field) => String(row[field] ?? "").trim() !== "");
+        row.animals = row.animals === "" ? "" : num(row.animals, 0);
+        row.tumors = row.tumors === "" ? "" : num(row.tumors, 0);
+        row.weeks = row.weeks === "" ? "" : num(row.weeks, 0);
+        row.experimentWeeks = row.experimentWeeks === "" ? "" : num(row.experimentWeeks, 0);
+        row.bw = row.bw === "" ? "" : num(row.bw, 0);
+        row.totalMg = row.totalMg === "" ? "" : num(row.totalMg, 0);
+        row.doseRate = row.doseRate === "" ? "" : num(row.doseRate, 0);
+        row.concentration = row.concentration === "" ? "" : num(row.concentration, 0);
+        row.intake = row.intake === "" ? "" : num(row.intake, 0);
+        row.dosingWeeks = row.dosingWeeks === "" ? "" : num(row.dosingWeeks, 0);
+        row.daysPerWeek = row.daysPerWeek === "" ? "" : num(row.daysPerWeek, 7);
+        rows.push(row);
+      });
+      state.rows = rows;
+    }
+
+    function addRow() {
+      readRowsFromDom();
+      const last = state.rows[state.rows.length - 1] || defaultRows()[0];
+      const copyStudyDefaults = Boolean(last.hasInput);
+      state.rows.push({
+        label: copyStudyDefaults ? `Dose group ${state.rows.length + 1}` : "",
+        animals: copyStudyDefaults ? last.animals : "",
+        tumors: "",
+        weeks: copyStudyDefaults ? last.weeks : "",
+        experimentWeeks: copyStudyDefaults ? last.experimentWeeks ?? last.weeks ?? "" : "",
+        bw: copyStudyDefaults ? last.bw : "",
+        mode: last.mode || "total",
+        totalMg: "",
+        doseRate: "",
+        concentration: "",
+        intake: "",
+        dosingWeeks: copyStudyDefaults ? last.dosingWeeks || "" : "",
+        daysPerWeek: copyStudyDefaults ? last.daysPerWeek || 7 : ""
+      });
+      renderRows();
+      calculate();
+    }
+
+    function removeRow(index) {
+      readRowsFromDom();
+      state.rows.splice(index, 1);
+      if (!state.rows.length) state.rows = defaultRows();
+      renderRows();
+      calculate();
+    }
+
+    function rowDose(row, standardWeeks) {
+      const warnings = [];
+      const exposureWeeks = num(row.weeks, 0);
+      const enteredExperimentWeeks = num(row.experimentWeeks, NaN);
+      const experimentWeeks = Number.isFinite(enteredExperimentWeeks) && enteredExperimentWeeks > 0
+        ? enteredExperimentWeeks
+        : exposureWeeks;
+      const bw = num(row.bw, 0);
+      const mode = row.mode || "total";
+      let totalMg = NaN;
+      let doseRate = NaN;
+      let comment = "";
+      let doseModeLabel = "Total mg";
+      let doseReconstruction = "";
+
+      if (mode === "rate") {
+        doseRate = num(row.doseRate, NaN);
+        doseModeLabel = "Dose rate";
+        comment = "Direct dose rate.";
+        doseReconstruction = `Dose rate entered directly = ${fmt(doseRate, 5)} mg/kg/day.`;
+      } else if (mode === "conc") {
+        const concentration = num(row.concentration, NaN);
+        const intake = num(row.intake, NaN);
+        const dosingWeeks = num(row.dosingWeeks, NaN);
+        const daysPerWeek = num(row.daysPerWeek, 7);
+        totalMg = concentration * (intake / 1000) * dosingWeeks * daysPerWeek;
+        if (bw > 0 && exposureWeeks > 0) doseRate = totalMg / (bw * exposureWeeks * 7);
+        doseModeLabel = "Concentration";
+        comment = `Total mg = ${fmt(totalMg)} from concentration.`;
+        doseReconstruction = `Total mg = ${fmt(concentration, 5)} mg/L x ${fmt(intake, 5)} mL/day / 1000 x ${fmt(dosingWeeks, 5)} dosing weeks x ${fmt(daysPerWeek, 5)} days/week = ${fmt(totalMg, 5)} mg. Dose rate = total mg / (${fmt(bw, 5)} kg x ${fmt(exposureWeeks, 5)} exposure weeks x 7 days/week) = ${fmt(doseRate, 5)} mg/kg/day.`;
+      } else {
+        totalMg = num(row.totalMg, NaN);
+        if (bw > 0 && exposureWeeks > 0) doseRate = totalMg / (bw * exposureWeeks * 7);
+        doseModeLabel = "Total mg";
+        comment = "Total mg divided by body weight and exposure duration.";
+        doseReconstruction = `Dose rate = ${fmt(totalMg, 5)} total mg / (${fmt(bw, 5)} kg x ${fmt(exposureWeeks, 5)} exposure weeks x 7 days/week) = ${fmt(doseRate, 5)} mg/kg/day.`;
+      }
+
+      if (!Number.isFinite(doseRate) || doseRate < 0) warnings.push(`${row.label || "A row"} has invalid dose.`);
+      if (mode !== "rate" && (!exposureWeeks || exposureWeeks <= 0)) warnings.push(`${row.label || "A row"} has invalid exposure weeks for dose reconstruction.`);
+      if (!experimentWeeks || experimentWeeks <= 0) warnings.push(`${row.label || "A row"} has invalid experiment weeks for CPDB f².`);
+      if (!standardWeeks || standardWeeks <= 0) warnings.push("Standard lifespan weeks must be greater than 0.");
+
+      const timeCorrection = standardWeeks > 0 ? Math.pow(experimentWeeks / standardWeeks, 2) : NaN;
+      const effectiveDose = doseRate * timeCorrection;
+      return { doseRate, timeCorrection, effectiveDose, totalMg, exposureWeeks, experimentWeeks, doseModeLabel, doseReconstruction, comment, warnings };
+    }
+
+    function adjustedIncidence(x, n, allowExtreme) {
+      if (!allowExtreme) return { p: x / n, adjusted: false };
+      if (x === 0 || x === n) return { p: (x + 0.5) / (n + 1), adjusted: true };
+      return { p: x / n, adjusted: false };
+    }
+
+    function transformedIncidence(group, p0, allowExtreme) {
+      const adj = adjustedIncidence(group.tumors, group.animals, allowExtreme);
+      const observedOverControl = (adj.p - p0) / (1 - p0);
+      const linearY = observedOverControl < 1 ? -Math.log(1 - observedOverControl) : Infinity;
+      return { p: adj.p, adjusted: adj.adjusted, observedOverControl, linearY };
+    }
+
+    function fitLinearSlope(groups, doseKey = "effectiveDose") {
+      const fitted = groups.filter((g) =>
+        Number.isFinite(g[doseKey]) &&
+        g[doseKey] > 0 &&
+        Number.isFinite(g.linearY) &&
+        g.linearY >= 0
+      );
+      const denominator = fitted.reduce((sum, g) => sum + g[doseKey] * g[doseKey], 0);
+      const numerator = fitted.reduce((sum, g) => sum + g[doseKey] * g.linearY, 0);
+      if (!fitted.length || denominator <= 0) {
+        return { b: NaN, fitted, reason: "No finite transformed response for slope fitting." };
+      }
+      return { b: numerator / denominator, fitted, reason: "" };
+    }
+
+    function applyExpectedFit(groups, b, p0, doseKey = "effectiveDose") {
+      let residualSumSquares = 0;
+      let residualCount = 0;
+      groups.forEach((g) => {
+        if (Number.isFinite(b) && b > 0 && Number.isFinite(g[doseKey])) {
+          g.expectedOverControl = 1 - Math.exp(-b * g[doseKey]);
+          g.expectedP = p0 + (1 - p0) * g.expectedOverControl;
+          if (Number.isFinite(g.observedOverControl)) {
+            g.residual = g.observedOverControl - g.expectedOverControl;
+            residualSumSquares += g.residual * g.residual;
+            residualCount += 1;
+          }
+        } else {
+          g.expectedOverControl = NaN;
+          g.expectedP = NaN;
+          g.residual = NaN;
+        }
+      });
+      return {
+        residualSumSquares,
+        rmse: residualCount ? Math.sqrt(residualSumSquares / residualCount) : NaN,
+        residualCount
+      };
+    }
+
+    function summarizeTd50WithDose(groups, p0, doseKey) {
+      const working = groups.map((g) => ({ ...g }));
+      const fit = fitLinearSlope(working, doseKey);
+      if (!Number.isFinite(fit.b) || fit.b <= 0) {
+        return {
+          td50: NaN,
+          b: fit.b,
+          fitQuality: { residualSumSquares: NaN, rmse: NaN, residualCount: 0 },
+          fitRows: fit.fitted || []
+        };
+      }
+      const fitQuality = applyExpectedFit(working, fit.b, p0, doseKey);
+      return {
+        td50: TD50_NUMERATOR / fit.b,
+        b: fit.b,
+        fitQuality,
+        fitRows: fit.fitted || []
+      };
+    }
+
+    function recomputeTd50FromGroups(groups, p0, allowExtreme) {
+      const working = groups.map((g) => ({ ...g }));
+      working.forEach((g) => {
+        Object.assign(g, transformedIncidence(g, p0, allowExtreme));
+      });
+      const fit = fitLinearSlope(working);
+      if (!Number.isFinite(fit.b) || fit.b <= 0) {
+        return { td50: NaN, b: fit.b, groups: working, fitRows: fit.fitted || [] };
+      }
+      applyExpectedFit(working, fit.b, p0);
+      return {
+        td50: TD50_NUMERATOR / fit.b,
+        b: fit.b,
+        groups: working,
+        fitRows: fit.fitted || []
+      };
+    }
+
+    function bootstrapTd50(result) {
+      if (!Number.isFinite(result.td50) || !result.groups?.length) {
+        return { values: [], iterations: BOOTSTRAP_ITERATIONS, successful: 0, lower: NaN, median: NaN, upper: NaN };
+      }
+
+      const sourceGroups = result.groups.filter((g) =>
+        Number.isFinite(g.effectiveDose) &&
+        g.effectiveDose > 0 &&
+        Number.isFinite(g.animals) &&
+        g.animals > 0
+      );
+      if (!sourceGroups.length) {
+        return { values: [], iterations: BOOTSTRAP_ITERATIONS, successful: 0, lower: NaN, median: NaN, upper: NaN };
+      }
+
+      const seedPayload = JSON.stringify({
+        compound: result.app.compound,
+        endpoint: result.app.endpoint,
+        source: result.app.source,
+        p0: result.p0,
+        controlAnimals: result.app.controlAnimals,
+        controlTumors: result.app.controlTumors,
+        rows: sourceGroups.map((g) => [g.label, g.animals, g.tumors, g.effectiveDose])
+      });
+      const random = seededRandom(hashString(seedPayload));
+      const values = [];
+
+      for (let i = 0; i < BOOTSTRAP_ITERATIONS; i += 1) {
+        let p0 = result.p0;
+        if (result.app.controlAnimals > 0) {
+          const controlX = drawBinomial(result.app.controlAnimals, result.p0, random);
+          p0 = Math.min(0.999999, Math.max(0, controlX / result.app.controlAnimals));
+        }
+        const sampled = sourceGroups.map((g) => ({
+          ...g,
+          tumors: drawBinomial(g.animals, g.tumors / g.animals, random)
+        }));
+        const fit = recomputeTd50FromGroups(sampled, p0, result.app.allowExtreme);
+        if (Number.isFinite(fit.td50) && fit.td50 > 0) values.push(fit.td50);
+      }
+
+      values.sort((a, b) => a - b);
+      return {
+        values,
+        iterations: BOOTSTRAP_ITERATIONS,
+        successful: values.length,
+        lower: quantile(values, 0.025),
+        median: quantile(values, 0.5),
+        upper: quantile(values, 0.975)
+      };
+    }
+
+    function calculate() {
+      readRowsFromDom();
+      const app = readApp();
+      const warnings = [];
+      const standardWeeks = app.standardWeeks;
+      const minWeeks = app.minWeeks;
+      const controlN = app.controlAnimals;
+      const controlX = app.controlTumors;
+      let p0 = 0;
+
+      if (controlN > 0) {
+        if (controlX > controlN) warnings.push("Control tumors cannot exceed control animals.");
+        p0 = Math.min(0.999999, Math.max(0, controlX / controlN));
+      }
+
+      if (!state.rows.some((row) => row.hasInput)) {
+        const emptyResult = {
+          td50: NaN,
+          uncorrectedTd50: NaN,
+          b: NaN,
+          uncorrectedB: NaN,
+          method: "",
+          status: "Ready for study inputs.",
+          statusClass: "",
+          warnings: [],
+          p0,
+          app,
+          groups: [],
+          isEmpty: true
+        };
+        renderAudit([]);
+        renderResult(emptyResult);
+        saveApp();
+        return emptyResult;
+      }
+
+      const groups = [];
+      for (const row of state.rows) {
+        if (!row.hasInput) continue;
+        const animals = num(row.animals, 0);
+        const tumors = num(row.tumors, 0);
+        if (animals <= 0) {
+          warnings.push(`${row.label || "A row"} has no animals.`);
+          continue;
+        }
+        if (tumors < 0 || tumors > animals) warnings.push(`${row.label || "A row"} has tumors outside 0-n.`);
+
+        const dose = rowDose(row, standardWeeks);
+        warnings.push(...dose.warnings);
+        if (dose.experimentWeeks > 0 && minWeeks > 0 && dose.experimentWeeks < minWeeks) {
+          warnings.push(`${row.label || "A row"} is below the ${fmt(minWeeks)} week half-lifespan flag.`);
+        }
+
+        groups.push({
+          label: row.label || "Dose group",
+          animals,
+          tumors,
+          weeks: dose.exposureWeeks,
+          experimentWeeks: dose.experimentWeeks,
+          bw: num(row.bw, 0),
+          mode: row.mode,
+          doseRate: dose.doseRate,
+          timeCorrection: dose.timeCorrection,
+          effectiveDose: dose.effectiveDose,
+          doseModeLabel: dose.doseModeLabel,
+          doseReconstruction: dose.doseReconstruction,
+          totalMg: dose.totalMg,
+          comment: dose.comment
+        });
+      }
+
+      const usable = groups.filter((g) => Number.isFinite(g.effectiveDose) && g.effectiveDose > 0 && g.animals > 0);
+      let td50 = NaN;
+      let b = NaN;
+      let method = "Linearized zero-intercept slope";
+      let status = "";
+      let statusClass = "";
+      let fit = { fitted: [], reason: "" };
+      let fitQuality = { residualSumSquares: NaN, rmse: NaN, residualCount: 0 };
+      let uncorrected = {
+        td50: NaN,
+        b: NaN,
+        fitQuality: { residualSumSquares: NaN, rmse: NaN, residualCount: 0 },
+        fitRows: []
+      };
+
+      usable.forEach((g) => {
+        const transformed = transformedIncidence(g, p0, app.allowExtreme);
+        Object.assign(g, transformed);
+        if (transformed.adjusted) {
+          warnings.push(`${g.label} incidence was continuity-corrected for an extreme count.`);
+        }
+        if (transformed.observedOverControl < 0) {
+          warnings.push(`${g.label} is below control background and was not used for slope fitting.`);
+        }
+        if (transformed.observedOverControl >= 1 && !Number.isFinite(transformed.linearY)) {
+          warnings.push(`${g.label} has response of 1.0 over control; enable continuity correction or add lower-dose data for a finite transformed value.`);
+        }
+      });
+
+      if (!usable.length) {
+        status = "No usable dose rows.";
+        statusClass = "bad";
+        method = "Not fitted";
+      } else if (!usable.some((g) => Number.isFinite(g.observedOverControl) && g.observedOverControl > 0)) {
+        status = "No tumor response above background; TD50 is not calculable.";
+        statusClass = "warn";
+        method = "No positive response";
+      } else {
+        fit = fitLinearSlope(usable);
+        b = fit.b;
+        fitQuality = applyExpectedFit(usable, b, p0);
+        if (Number.isFinite(b) && b > 0) {
+          td50 = TD50_NUMERATOR / b;
+          status = `Calculated from ${fit.fitted.length} transformed dose row${fit.fitted.length === 1 ? "" : "s"}.`;
+          statusClass = "good";
+        } else {
+          status = fit.reason || "Linearized slope is not positive; TD50 is not calculable.";
+          statusClass = "warn";
+          method = "Not fitted";
+        }
+      }
+
+      uncorrected = summarizeTd50WithDose(usable, p0, "doseRate");
+
+      renderAudit(groups);
+      const result = {
+        td50,
+        uncorrectedTd50: uncorrected.td50,
+        b,
+        uncorrectedB: uncorrected.b,
+        method,
+        status,
+        statusClass,
+        warnings,
+        p0,
+        app,
+        groups,
+        fitQuality,
+        uncorrectedFitQuality: uncorrected.fitQuality,
+        fitRows: fit.fitted || [],
+        uncorrectedFitRows: uncorrected.fitRows || [],
+        isEmpty: false
+      };
+      result.bootstrap = bootstrapTd50(result);
+      renderResult(result);
+      saveApp();
+      return result;
+    }
+
+    function renderAudit(groups) {
+      const body = el("auditRows");
+      body.innerHTML = "";
+      groups.forEach((g) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(g.label)}</td>
+          <td>${escapeHtml(g.tumors)}/${escapeHtml(g.animals)} (${fmt(g.tumors / g.animals, 3)})</td>
+          <td>${fmt(g.doseRate)}</td>
+          <td>${fmt(g.experimentWeeks)}</td>
+          <td>${fmt(g.timeCorrection)}</td>
+          <td>${fmt(g.effectiveDose)}</td>
+          <td>${fmt(g.observedOverControl, 4)}</td>
+          <td>${fmt(g.linearY, 4)}</td>
+          <td>${fmt(g.expectedOverControl, 4)}</td>
+          <td>${fmt(g.residual, 4)}</td>
+          <td>${escapeHtml(g.comment)}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderResult(result) {
+      el("td50Value").textContent = Number.isFinite(result.td50) ? fmt(result.td50, 4) : "-";
+      const status = el("td50Status");
+      status.textContent = result.status;
+      status.className = `status ${result.statusClass || ""}`;
+
+      const pills = el("methodPills");
+      pills.innerHTML = "";
+      const pillTexts = result.isEmpty
+        ? ["No calculation"]
+        : [
+            result.method || "Not calculated",
+            `CPDB ${correctionSummary(result.groups)}`,
+            `p0 ${fmt(result.p0, 3)}`,
+            `b ${fmt(result.b, 4)}`,
+            `fit RMSE ${fmt(result.fitQuality?.rmse, 4)}`
+          ];
+      pillTexts.forEach((text) => {
+        const span = document.createElement("span");
+        span.className = "pill";
+        span.textContent = text;
+        pills.appendChild(span);
+      });
+
+      el("methodStatus").textContent = result.isEmpty
+        ? "Enter the article values, then calculate."
+        : Number.isFinite(result.td50)
+        ? "Main TD50 is CPDB f²-adjusted: dose rate is multiplied by (experiment weeks / standard lifespan)^2 before fitting B. The report also shows the no-correction comparator."
+        : "A numeric TD50 needs a finite transformed response above control background.";
+
+      const warnList = el("warnings");
+      warnList.innerHTML = "";
+      Array.from(new Set(result.warnings)).forEach((w) => {
+        const li = document.createElement("li");
+        li.textContent = w;
+        warnList.appendChild(li);
+      });
+
+      renderPlots(result);
+      renderReport(result);
+    }
+
+    function renderPlots(result) {
+      const fitBox = el("fitPlotBox");
+      const bootBox = el("bootstrapPlotBox");
+      if (!fitBox || !bootBox) return;
+
+      if (result.isEmpty) {
+        fitBox.innerHTML = emptyPlotSvg("No fitted dose-response plot available");
+        bootBox.innerHTML = emptyPlotSvg("No bootstrap interval available");
+        el("fitPlotSummary").textContent = "Not calculated";
+        el("bootstrapPlotSummary").textContent = "Not calculated";
+        el("fitPlotCaption").textContent = "Enter study rows to view the fitted slope and TD50 reference.";
+        el("bootstrapPlotCaption").textContent = "Bootstrap interval appears after a finite TD50 is calculated.";
+        return;
+      }
+
+      fitBox.innerHTML = fitPlotSvg(result);
+      const bootstrap = result.bootstrap || {};
+      bootBox.innerHTML = bootstrapPlotSvg(bootstrap);
+      el("fitPlotSummary").textContent = Number.isFinite(result.td50) ? `TD50 ${fmt(result.td50, 4)}` : "Not calculable";
+      el("fitPlotCaption").textContent = Number.isFinite(result.td50)
+        ? "Points show transformed observed responses plotted against CPDB f²-adjusted dose. The fitted line is B; TD50 is where that line reaches 0.693."
+        : "A finite slope above background is needed before plotting a TD50 reference.";
+      el("bootstrapPlotSummary").textContent = Number.isFinite(bootstrap.median)
+        ? `${fmt(bootstrap.lower, 3)}-${fmt(bootstrap.upper, 3)}`
+        : "Not calculable";
+      el("bootstrapPlotCaption").textContent = Number.isFinite(bootstrap.median)
+        ? `Deterministic ${bootstrap.iterations}-iteration binomial bootstrap; ${bootstrap.successful} successful fits. Bars show resampled TD50 values; shaded area is the 2.5-97.5 percentile interval.`
+        : "Bootstrap could not produce finite TD50 values from the current incidence pattern.";
+    }
+
+    function reportField(label, value, extraClass = "") {
+      return `
+        <div class="report-field ${extraClass}">
+          <div class="report-label">${escapeHtml(label)}</div>
+          <div class="report-value ${extraClass === "large" ? "large" : ""}">${escapeHtml(value || "-")}</div>
+        </div>
+      `;
+    }
+
+    function calcStepField(label, value) {
+      return `
+        <div class="calc-step-label">${escapeHtml(label)}</div>
+        <div class="calc-step-value">${escapeHtml(value || "-")}</div>
+      `;
+    }
+
+    function emptyPlotSvg(message) {
+      return `
+        <svg viewBox="0 0 460 236" role="img" aria-label="${escapeHtml(message)}">
+          <rect x="0" y="0" width="460" height="236" fill="#ffffff"></rect>
+          <rect x="22" y="22" width="416" height="176" rx="6" fill="#f8fafb" stroke="#d7dee3" stroke-dasharray="5 5"></rect>
+          <text x="230" y="118" text-anchor="middle" dominant-baseline="middle" fill="#6b7683" font-size="13" font-weight="650">${escapeHtml(message)}</text>
+        </svg>
+      `;
+    }
+
+    function fitPlotSvg(result) {
+      const points = (result.groups || []).filter((g) =>
+        Number.isFinite(g.effectiveDose) &&
+        g.effectiveDose >= 0 &&
+        Number.isFinite(g.linearY) &&
+        g.linearY >= 0
+      );
+      if (!Number.isFinite(result.b) || result.b <= 0 || !points.length) {
+        return emptyPlotSvg("No fitted dose-response plot available");
+      }
+
+      const width = 460;
+      const height = 236;
+      const margin = { top: 26, right: 26, bottom: 66, left: 70 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const maxDoseObserved = Math.max(...points.map((g) => g.effectiveDose), 0);
+      const td50InFrame = Number.isFinite(result.td50) && result.td50 <= Math.max(maxDoseObserved * 2.5, maxDoseObserved + 1e-9);
+      const xMax = Math.max(maxDoseObserved, td50InFrame ? result.td50 : 0, 1e-9) * 1.08;
+      const yCandidates = points.map((g) => g.linearY).concat(points.map((g) => result.b * g.effectiveDose), [TD50_NUMERATOR]);
+      const yMax = Math.max(...yCandidates.filter(Number.isFinite), 0.1) * 1.16;
+      const x = (v) => margin.left + Math.max(0, Math.min(plotW, (v / xMax) * plotW));
+      const y = (v) => margin.top + plotH - Math.max(0, Math.min(plotH, (v / yMax) * plotH));
+      const lineEndY = result.b * xMax;
+      const pointSvg = points.map((g) => {
+        const label = `${g.label}: y ${fmt(g.linearY, 3)}, dose ${fmt(g.effectiveDose, 3)}`;
+        return `<circle cx="${x(g.effectiveDose).toFixed(1)}" cy="${y(g.linearY).toFixed(1)}" r="4.2" fill="#08746f" stroke="#ffffff" stroke-width="1.5"><title>${escapeHtml(label)}</title></circle>`;
+      }).join("");
+      const td50Line = td50InFrame
+        ? `<line x1="${x(result.td50).toFixed(1)}" y1="${y(TD50_NUMERATOR).toFixed(1)}" x2="${x(result.td50).toFixed(1)}" y2="${margin.top + plotH}" stroke="#9b7a2f" stroke-width="1.5" stroke-dasharray="4 4"></line>
+           <rect x="${Math.max(margin.left + 4, Math.min(margin.left + plotW - 78, x(result.td50) - 39)).toFixed(1)}" y="${(margin.top + 8).toFixed(1)}" width="78" height="18" rx="4" fill="#ffffff" opacity="0.92" stroke="#e5dcc5"></rect>
+           <text x="${Math.max(margin.left + 43, Math.min(margin.left + plotW - 39, x(result.td50))).toFixed(1)}" y="${(margin.top + 21).toFixed(1)}" text-anchor="middle" fill="#7a5c1f" font-size="10.5" font-weight="700">TD50 ${escapeHtml(fmt(result.td50, 3))}</text>`
+        : `<text x="${margin.left + plotW}" y="${margin.top + 12}" text-anchor="end" fill="#8a5b00" font-size="10.5" font-weight="650">TD50 beyond plotted dose range</text>`;
+
+      return `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Linearized TD50 dose response plot">
+          <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
+          <g>
+            <line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="#aab5bf" stroke-width="1"></line>
+            <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="#aab5bf" stroke-width="1"></line>
+            <line x1="${margin.left}" y1="${y(TD50_NUMERATOR).toFixed(1)}" x2="${margin.left + plotW}" y2="${y(TD50_NUMERATOR).toFixed(1)}" stroke="#d7c07a" stroke-width="1" stroke-dasharray="4 4"></line>
+            <text x="${margin.left - 8}" y="${y(TD50_NUMERATOR).toFixed(1)}" text-anchor="end" dominant-baseline="middle" fill="#6b7683" font-size="10.5" font-weight="650">0.693</text>
+            <line x1="${margin.left}" y1="${y(0).toFixed(1)}" x2="${margin.left + plotW}" y2="${y(Math.min(lineEndY, yMax)).toFixed(1)}" stroke="#23313e" stroke-width="2.1"></line>
+            ${td50Line}
+            ${pointSvg}
+            <text x="${margin.left + plotW / 2}" y="${height - 14}" text-anchor="middle" fill="#44505f" font-size="11" font-weight="700">CPDB f²-adjusted dose, mg/kg/day</text>
+            <text x="18" y="${margin.top + plotH / 2}" transform="rotate(-90 18 ${margin.top + plotH / 2})" text-anchor="middle" fill="#44505f" font-size="11" font-weight="700">Linearized response</text>
+            <text x="${margin.left}" y="${margin.top + plotH + 22}" text-anchor="middle" fill="#6b7683" font-size="10.5">0</text>
+            <text x="${margin.left + plotW}" y="${margin.top + plotH + 22}" text-anchor="middle" fill="#6b7683" font-size="10.5">${escapeHtml(fmtAxis(xMax))}</text>
+            <text x="${margin.left - 7}" y="${margin.top + plotH + 3}" text-anchor="end" fill="#6b7683" font-size="10.5">0</text>
+            <text x="${margin.left - 7}" y="${margin.top + 4}" text-anchor="end" fill="#6b7683" font-size="10.5">${escapeHtml(fmtAxis(yMax))}</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    function bootstrapPlotSvg(bootstrap) {
+      const values = bootstrap?.values || [];
+      if (!values.length || !Number.isFinite(bootstrap.lower) || !Number.isFinite(bootstrap.upper)) {
+        return emptyPlotSvg("No bootstrap interval available");
+      }
+
+      const width = 460;
+      const height = 236;
+      const margin = { top: 58, right: 26, bottom: 62, left: 52 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const minValue = values[0];
+      const maxValue = values[values.length - 1];
+      const useLog = minValue > 0 && maxValue / minValue > 20;
+      const transform = (v) => useLog ? Math.log10(Math.max(v, minValue * 0.5)) : v;
+      const untransformLabel = (v) => useLog ? Math.pow(10, v) : v;
+      const minX = transform(minValue);
+      const maxX = transform(maxValue);
+      const bins = 18;
+      const counts = Array.from({ length: bins }, () => 0);
+      values.forEach((value) => {
+        const scaled = maxX > minX ? (transform(value) - minX) / (maxX - minX) : 0.5;
+        const idx = Math.max(0, Math.min(bins - 1, Math.floor(scaled * bins)));
+        counts[idx] += 1;
+      });
+      const maxCount = Math.max(...counts, 1);
+      const x = (v) => margin.left + (maxX > minX ? ((transform(v) - minX) / (maxX - minX)) * plotW : plotW / 2);
+      const bars = counts.map((count, idx) => {
+        const barW = plotW / bins;
+        const h = (count / maxCount) * plotH;
+        const bx = margin.left + idx * barW + 1;
+        const by = margin.top + plotH - h;
+        return `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${Math.max(1, barW - 2).toFixed(1)}" height="${h.toFixed(1)}" fill="#08746f" opacity="0.72"></rect>`;
+      }).join("");
+      const marker = (value, color, label, strokeWidth = 1.7) => `
+        <line x1="${x(value).toFixed(1)}" y1="${margin.top}" x2="${x(value).toFixed(1)}" y2="${margin.top + plotH}" stroke="${color}" stroke-width="${strokeWidth}"><title>${escapeHtml(label)} ${escapeHtml(fmt(value, 4))} mg/kg/day</title></line>
+      `;
+      return `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Bootstrap TD50 interval plot">
+          <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"></rect>
+          <rect x="${margin.left + 8}" y="16" width="168" height="24" rx="5" fill="#ffffff" opacity="0.96" stroke="#dce5e8"></rect>
+          <line x1="${margin.left + 18}" y1="28" x2="${margin.left + 35}" y2="28" stroke="#23313e" stroke-width="2.2"></line>
+          <text x="${margin.left + 42}" y="32" fill="#334052" font-size="10.5" font-weight="700">median</text>
+          <rect x="${margin.left + 88}" y="22" width="18" height="10" fill="#9b7a2f" opacity="0.18" stroke="#9b7a2f"></rect>
+          <text x="${margin.left + 112}" y="32" fill="#6b7683" font-size="10.5" font-weight="700">95% interval</text>
+          <line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="#aab5bf" stroke-width="1"></line>
+          <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="#aab5bf" stroke-width="1"></line>
+          ${bars}
+          <rect x="${x(bootstrap.lower).toFixed(1)}" y="${margin.top}" width="${Math.max(1, x(bootstrap.upper) - x(bootstrap.lower)).toFixed(1)}" height="${plotH}" fill="#9b7a2f" opacity="0.13"></rect>
+          ${marker(bootstrap.lower, "#9b7a2f", "2.5 percentile")}
+          ${marker(bootstrap.median, "#23313e", "median", 2.2)}
+          ${marker(bootstrap.upper, "#9b7a2f", "97.5 percentile")}
+          <text x="${margin.left + plotW / 2}" y="${height - 14}" text-anchor="middle" fill="#44505f" font-size="11" font-weight="700">TD50, mg/kg/day${useLog ? " (log-scaled)" : ""}</text>
+          <text x="${margin.left}" y="${margin.top + plotH + 22}" text-anchor="middle" fill="#6b7683" font-size="10.5">${escapeHtml(fmtAxis(untransformLabel(minX)))}</text>
+          <text x="${margin.left + plotW}" y="${margin.top + plotH + 22}" text-anchor="middle" fill="#6b7683" font-size="10.5">${escapeHtml(fmtAxis(untransformLabel(maxX)))}</text>
+        </svg>
+      `;
+    }
+
+    function doseCorrectionText(group, standardWeeks) {
+      return `CPDB f² correction: f = experiment time / standard lifespan = ${fmt(group.experimentWeeks, 5)} / ${fmt(standardWeeks, 5)}; f² = ${fmt(group.timeCorrection, 5)}. CPDB-adjusted dose = ${fmt(group.doseRate, 5)} x ${fmt(group.timeCorrection, 5)} = ${fmt(group.effectiveDose, 5)} mg/kg/day.`;
+    }
+
+    function correctionSummary(groups) {
+      const factors = (groups || [])
+        .map((g) => g.timeCorrection)
+        .filter((v) => Number.isFinite(v) && v >= 0)
+        .sort((a, b) => a - b);
+      if (!factors.length) return "Not available";
+      const min = factors[0];
+      const max = factors[factors.length - 1];
+      if (Math.abs(max - min) < 1e-9) return `f² ${fmt(min, 5)}`;
+      return `f² range ${fmt(min, 5)} to ${fmt(max, 5)}`;
+    }
+
+    function adjustmentRatio(result) {
+      if (!Number.isFinite(result.td50) || !Number.isFinite(result.uncorrectedTd50) || result.uncorrectedTd50 <= 0) {
+        return "Not available";
+      }
+      return `${fmt(result.td50 / result.uncorrectedTd50, 5)} x uncorrected TD50`;
+    }
+
+    function responseTransformText(group, p0) {
+      return `P = ${fmt(group.tumors, 5)} / ${fmt(group.animals, 5)} = ${fmt(group.p, 5)}. P0 = ${fmt(p0, 5)}. Observed over control = (P - P0) / (1 - P0) = ${fmt(group.observedOverControl, 5)}. Linear y = -ln(1 - observed over control) = ${fmt(group.linearY, 5)}. Expected over control = ${fmt(group.expectedOverControl, 5)}; residual = ${fmt(group.residual, 5)}.`;
+    }
+
+    function bootstrapMethodText(result) {
+      const b = result.bootstrap || {};
+      if (!Number.isFinite(b.lower) || !Number.isFinite(b.upper)) {
+        return "Bootstrap TD50 interval was not calculable for this incidence pattern.";
+      }
+      const controlText = result.app.controlAnimals > 0
+        ? "Control tumor counts are also resampled from the entered control background."
+        : "Control background is fixed at the entered P0 because no control animal count was provided.";
+      return `${b.iterations} deterministic binomial resamples are generated from the entered tumor proportions and group sizes. ${controlText} For each resample, the same CPDB f²-adjusted doses are retained, B is refitted as the zero-intercept slope, adjusted TD50 is recalculated as 0.693 / B, and the 2.5th and 97.5th percentiles of successful finite fits define the reported 95% interval (${fmt(b.lower, 5)} to ${fmt(b.upper, 5)} mg/kg/day; ${b.successful}/${b.iterations} successful fits).`;
+    }
+
+    function renderReport(result) {
+      const box = el("reportBox");
+      if (result.isEmpty) {
+        box.innerHTML = `
+          <div class="report-empty">
+            <div class="report-title">No calculation yet</div>
+            <div class="mini">Enter the study inputs and dose groups to generate the audit summary.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const app = result.app;
+      const td50 = Number.isFinite(result.td50) ? `${fmt(result.td50, 5)} mg/kg/day` : "Not calculable";
+      const uncorrectedTd50 = Number.isFinite(result.uncorrectedTd50) ? `${fmt(result.uncorrectedTd50, 5)} mg/kg/day` : "Not calculable";
+      const bootstrap = result.bootstrap || {};
+      const bootstrapInterval = Number.isFinite(bootstrap.lower) && Number.isFinite(bootstrap.upper)
+        ? `${fmt(bootstrap.lower, 5)} to ${fmt(bootstrap.upper, 5)} mg/kg/day`
+        : "Not calculable";
+      const warnings = Array.from(new Set(result.warnings || []));
+      const detailRows = result.groups.map((g) => `
+        <div class="calc-step">
+          <div class="calc-step-title">${escapeHtml(g.label)}</div>
+          <div class="calc-step-grid">
+            ${calcStepField("Dose input", g.doseModeLabel || g.mode || "-")}
+            ${calcStepField("Exposure weeks", fmt(g.weeks))}
+            ${calcStepField("Experiment weeks", fmt(g.experimentWeeks))}
+            ${calcStepField("Dose reconstruction", `${g.doseReconstruction || g.comment || "-"} ${doseCorrectionText(g, app.standardWeeks)}`)}
+            ${calcStepField("Response transform", responseTransformText(g, result.p0))}
+          </div>
+        </div>
+      `).join("");
+      const rows = result.groups.map((g) => `
+        <tr>
+          <td>${escapeHtml(g.label)}</td>
+          <td>${escapeHtml(g.tumors)}/${escapeHtml(g.animals)}</td>
+          <td>${fmt(g.effectiveDose)}</td>
+          <td>${fmt(g.observedOverControl, 4)}</td>
+          <td>${fmt(g.linearY, 4)}</td>
+          <td>${fmt(g.expectedOverControl, 4)}</td>
+          <td>${fmt(g.residual, 4)}</td>
+        </tr>
+      `).join("");
+
+      box.innerHTML = `
+        <div class="report-kicker">Calculation report</div>
+        <div class="report-title">${escapeHtml(app.compound || "Untitled study")}</div>
+        <div class="report-grid">
+          ${reportField("CPDB f²-adjusted TD50", td50, "large")}
+          ${reportField("No f² correction TD50", uncorrectedTd50)}
+          ${reportField("CPDB f² correction", correctionSummary(result.groups))}
+          ${reportField("Adjustment effect", adjustmentRatio(result))}
+          ${reportField("Method", result.method || "Not calculated")}
+          ${reportField("Endpoint", app.endpoint || "-")}
+          ${reportField("Species", app.species || "-")}
+          ${reportField("Strain / sex", app.strainSex || "-")}
+          ${reportField("Route", app.route || "-")}
+          ${reportField("Data source article", app.source || "-", "wide")}
+          ${reportField("Equation reference", "Gaylor and Gold, Regul Toxicol Pharmacol. 1995;22(1):57-63.", "wide")}
+          ${reportField("Background p0", fmt(result.p0, 4))}
+          ${reportField("Adjusted slope b", fmt(result.b, 5))}
+          ${reportField("Uncorrected slope b", fmt(result.uncorrectedB, 5))}
+          ${reportField("Fit RMSE", fmt(result.fitQuality?.rmse, 5))}
+          ${reportField("Bootstrap 95% interval", bootstrapInterval, "wide")}
+          ${reportField("Bootstrap fits", Number.isFinite(bootstrap.successful) ? `${bootstrap.successful}/${bootstrap.iterations}` : "-", "wide")}
+        </div>
+        <div class="report-visuals">
+          <div>
+            <div class="report-kicker">Linearized fit</div>
+            <div class="plot-box">${fitPlotSvg(result)}</div>
+          </div>
+          <div>
+            <div class="report-kicker">Bootstrap TD50</div>
+            <div class="plot-box">${bootstrapPlotSvg(bootstrap)}</div>
+          </div>
+        </div>
+        ${detailRows ? `
+          <div class="report-kicker" style="margin-top:14px">Detailed calculation steps</div>
+          <div class="calc-step-list">${detailRows}</div>
+        ` : ""}
+        ${rows ? `
+          <div class="report-kicker" style="margin-top:14px">Audit rows</div>
+          <table class="report-table" aria-label="Calculation rows">
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Incidence</th>
+                <th>CPDB-adjusted dose</th>
+                <th>Observed</th>
+                <th>Linear y</th>
+                <th>Expected</th>
+                <th>Residual</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        ` : ""}
+        ${warnings.length ? `<div class="report-footnote"><strong>Warnings:</strong> ${escapeHtml(warnings.join("; "))}</div>` : ""}
+        ${app.notes ? `<div class="report-footnote"><strong>Notes:</strong> ${escapeHtml(app.notes)}</div>` : ""}
+        <div class="report-footnote"><strong>Bootstrap calculation:</strong> ${escapeHtml(bootstrapMethodText(result))}</div>
+        <div class="report-footnote">Bootstrap note: the interval resamples tumor counts using the entered group sizes and a fixed seed from the current study fields. It does not include uncertainty from dose reconstruction, survival/life-table adjustment, terminal-sacrifice handling, dose-group selection, pathology adjudication, article selection, tumor subtype grouping, statistical trend testing, or external database model choices.</div>
+        <div class="report-footnote">CPDB f² correction: f = experiment time on test / standard lifespan; f² = (experiment weeks / standard lifespan weeks)². The app multiplies each entered dose rate by f² before fitting B. Exposure weeks are used only when reconstructing dose rate from total-dose or concentration inputs. This is equivalent to TD50_adjusted = TD50_uncorrected x f² when all dose rows share the same experiment time. For row-specific experiment times, each row receives its own f².</div>
+        <div class="report-footnote">Formula: observed over control = (P - P0) / (1 - P0); linear y = -ln(1 - observed over control); B is the zero-intercept slope of linear y versus CPDB-adjusted dose; expected over control = 1 - exp(-B x dose); adjusted TD50 = 0.693 / B. Single finite dose-row cases can closely match the earlier one-hit rearrangement because the equations reduce to the same slope. This is an estimate from user-entered article data, not an official CPDB or external database calculation.</div>
+      `;
+    }
+
+    function makeReport(result) {
+      const app = result.app;
+      const lines = [];
+      if (result.isEmpty) {
+        return "No calculation yet.";
+      }
+      lines.push("TD50 calculation");
+      lines.push("");
+      lines.push(`Compound: ${app.compound || ""}`);
+      lines.push(`Endpoint: ${app.endpoint || ""}`);
+      lines.push(`Species: ${app.species || ""}`);
+      lines.push(`Strain/sex: ${app.strainSex || ""}`);
+      lines.push(`Route: ${app.route || ""}`);
+      lines.push(`Data source article: ${app.source || ""}`);
+      lines.push("");
+      lines.push(`Standard lifespan: ${fmt(app.standardWeeks)} weeks`);
+      lines.push(`Control/background p0: ${fmt(result.p0, 4)}`);
+      lines.push(`Method: ${result.method || "not calculated"}`);
+      lines.push(`CPDB f² correction: ${correctionSummary(result.groups)}`);
+      lines.push(`CPDB f²-adjusted TD50: ${Number.isFinite(result.td50) ? fmt(result.td50, 5) + " mg/kg/day" : "not calculable"}`);
+      lines.push(`No f² correction TD50: ${Number.isFinite(result.uncorrectedTd50) ? fmt(result.uncorrectedTd50, 5) + " mg/kg/day" : "not calculable"}`);
+      lines.push(`Adjustment effect: ${adjustmentRatio(result)}`);
+      lines.push(`Adjusted slope b: ${fmt(result.b, 5)}`);
+      lines.push(`Uncorrected slope b: ${fmt(result.uncorrectedB, 5)}`);
+      lines.push(`Fit RMSE: ${fmt(result.fitQuality?.rmse, 5)}`);
+      if (Number.isFinite(result.bootstrap?.lower) && Number.isFinite(result.bootstrap?.upper)) {
+        lines.push(`Bootstrap TD50 95% interval: ${fmt(result.bootstrap.lower, 5)} to ${fmt(result.bootstrap.upper, 5)} mg/kg/day`);
+        lines.push(`Bootstrap successful fits: ${result.bootstrap.successful}/${result.bootstrap.iterations}`);
+      } else {
+        lines.push("Bootstrap TD50 95% interval: not calculable");
+      }
+      lines.push("");
+      lines.push("Detailed calculation steps:");
+      result.groups.forEach((g) => {
+        lines.push(`- ${g.label}`);
+        lines.push(`  Dose input used: ${g.doseModeLabel || g.mode || ""}`);
+        lines.push(`  Exposure weeks: ${fmt(g.weeks, 5)}`);
+        lines.push(`  Experiment weeks for CPDB f²: ${fmt(g.experimentWeeks, 5)}`);
+        lines.push(`  Dose reconstruction: ${g.doseReconstruction || g.comment || ""} ${doseCorrectionText(g, app.standardWeeks)}`);
+        lines.push(`  TD50 response transform: ${responseTransformText(g, result.p0)}`);
+      });
+      lines.push("");
+      lines.push("Rows:");
+      result.groups.forEach((g) => {
+        lines.push(`- ${g.label}: ${g.tumors}/${g.animals}; exposure weeks ${fmt(g.weeks, 5)}; experiment weeks ${fmt(g.experimentWeeks, 5)}; dose rate ${fmt(g.doseRate)} mg/kg/day; CPDB f² ${fmt(g.timeCorrection, 5)}; CPDB-adjusted dose ${fmt(g.effectiveDose)} mg/kg/day; observed over control ${fmt(g.observedOverControl, 5)}; linear y ${fmt(g.linearY, 5)}; expected over control ${fmt(g.expectedOverControl, 5)}; residual ${fmt(g.residual, 5)}`);
+      });
+      if (app.notes) {
+        lines.push("");
+        lines.push(`Notes: ${app.notes}`);
+      }
+      if (result.warnings.length) {
+        lines.push("");
+        lines.push("Warnings:");
+        Array.from(new Set(result.warnings)).forEach((w) => lines.push(`- ${w}`));
+      }
+      lines.push("");
+      lines.push("CPDB f² correction: f = experiment time on test / standard lifespan; f² = (experiment weeks / standard lifespan weeks)^2. The app multiplies each entered dose rate by f² before fitting B. Exposure weeks are used only when reconstructing dose rate from total-dose or concentration inputs. This is equivalent to TD50_adjusted = TD50_uncorrected x f² when all dose rows share the same experiment time. For row-specific experiment times, each row receives its own f².");
+      lines.push("Formula: observed over control = (P - P0) / (1 - P0); linear y = -ln(1 - observed over control); B is the zero-intercept slope of linear y versus CPDB-adjusted dose; expected over control = 1 - exp(-B x dose); adjusted TD50 = 0.693 / B.");
+      lines.push(`Bootstrap calculation: ${bootstrapMethodText(result)}`);
+      lines.push("Bootstrap note: the interval resamples tumor counts using the entered group sizes and a fixed seed from the current study fields. It does not include uncertainty from dose reconstruction, survival/life-table adjustment, terminal-sacrifice handling, dose-group selection, pathology adjudication, article selection, tumor subtype grouping, statistical trend testing, or external database model choices.");
+      lines.push("Note: single finite dose-row cases can closely match the earlier one-hit rearrangement because the equations reduce to the same slope.");
+      lines.push("Equation reference: Gaylor and Gold. Quick estimate of the regulatory virtually safe dose based on the maximum tolerated dose for rodent bioassays. Regul Toxicol Pharmacol. 1995;22(1):57-63.");
+      lines.push("This is an estimate from user-entered article data, not an official CPDB or external database calculation.");
+      return lines.join("\n");
+    }
+
+    function exportJson() {
+      const data = JSON.stringify(readApp(), null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      downloadBlob(blob, "td50_study_file.json");
+      toast("Study file saved");
+    }
+
+    function exportCsv() {
+      const result = calculate();
+      const rows = [
+        ["compound", "endpoint", "data_source_article", "equation_reference", "group", "animals", "tumors", "exposure_weeks", "experiment_weeks_for_cpdb_f2", "dose_rate_mg_kg_day", "cpdb_f_squared_factor", "cpdb_adjusted_dose_mg_kg_day", "observed_over_control", "linear_y", "expected_over_control", "residual", "adjusted_slope_b", "uncorrected_slope_b", "fit_rmse", "td50_cpdb_f2_adjusted_mg_kg_day", "td50_without_f2_correction_mg_kg_day", "td50_adjustment_ratio", "bootstrap_lower_95_mg_kg_day", "bootstrap_median_mg_kg_day", "bootstrap_upper_95_mg_kg_day", "bootstrap_successful_fits", "bootstrap_iterations", "method"]
+      ];
+      result.groups.forEach((g) => {
+        rows.push([
+          result.app.compound,
+          result.app.endpoint,
+          result.app.source,
+          "Gaylor and Gold. Regul Toxicol Pharmacol. 1995;22(1):57-63.",
+          g.label,
+          g.animals,
+          g.tumors,
+          g.weeks,
+          g.experimentWeeks,
+          g.doseRate,
+          g.timeCorrection,
+          g.effectiveDose,
+          g.observedOverControl,
+          g.linearY,
+          g.expectedOverControl,
+          g.residual,
+          result.b,
+          result.uncorrectedB,
+          result.fitQuality?.rmse,
+          Number.isFinite(result.td50) ? result.td50 : "",
+          Number.isFinite(result.uncorrectedTd50) ? result.uncorrectedTd50 : "",
+          Number.isFinite(result.td50) && Number.isFinite(result.uncorrectedTd50) && result.uncorrectedTd50 > 0 ? result.td50 / result.uncorrectedTd50 : "",
+          Number.isFinite(result.bootstrap?.lower) ? result.bootstrap.lower : "",
+          Number.isFinite(result.bootstrap?.median) ? result.bootstrap.median : "",
+          Number.isFinite(result.bootstrap?.upper) ? result.bootstrap.upper : "",
+          Number.isFinite(result.bootstrap?.successful) ? result.bootstrap.successful : "",
+          Number.isFinite(result.bootstrap?.iterations) ? result.bootstrap.iterations : "",
+          result.method
+        ]);
+      });
+      const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
+      downloadBlob(new Blob([csv], { type: "text/csv" }), "td50_calculation.csv");
+    }
+
+    function downloadBlob(blob, filename) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function playCompletionDing() {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const context = new AudioContextClass();
+        const gain = context.createGain();
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.055, context.currentTime + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.34);
+        gain.connect(context.destination);
+
+        [880, 1174.66].forEach((frequency, index) => {
+          const osc = context.createOscillator();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(frequency, context.currentTime + index * 0.085);
+          osc.connect(gain);
+          osc.start(context.currentTime + index * 0.085);
+          osc.stop(context.currentTime + 0.32 + index * 0.04);
+        });
+        window.setTimeout(() => context.close().catch(() => {}), 650);
+      } catch {
+        // Audio is optional and may be blocked by the browser.
+      }
+    }
+
+    function manualCalculate() {
+      const result = calculate();
+      if (!result.isEmpty) {
+        playCompletionDing();
+        toast(Number.isFinite(result.td50) ? "Calculation complete" : "Calculation reviewed");
+      }
+      return result;
+    }
+
+    function exportPdf() {
+      const result = calculate();
+      if (result.isEmpty) {
+        toast("Enter study data before exporting");
+        return;
+      }
+      document.body.classList.add("print-report");
+      window.setTimeout(() => {
+        window.scrollTo(0, 0);
+        window.print();
+        window.setTimeout(() => document.body.classList.remove("print-report"), 1500);
+      }, 120);
+    }
+
+    async function copyReport() {
+      const result = calculate();
+      const report = makeReport(result);
+      try {
+        await navigator.clipboard.writeText(report);
+        toast("Report copied");
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = report;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+        toast("Report copied");
+      }
+    }
+
+    function clearAll() {
+      localStorage.removeItem(STORAGE_KEY);
+      loadApp(blankState());
+    }
+
+    function bindEvents() {
+      el("addRow").addEventListener("click", addRow);
+      el("removeLastRow").addEventListener("click", () => removeRow(state.rows.length - 1));
+      el("groupRows").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-remove]");
+        if (button) removeRow(Number(button.dataset.remove));
+      });
+      document.querySelectorAll("input, select, textarea").forEach((node) => {
+        node.addEventListener("input", scheduleCalculate);
+        node.addEventListener("change", scheduleCalculate);
+      });
+      el("groupRows").addEventListener("input", scheduleCalculate);
+      el("groupRows").addEventListener("change", scheduleCalculate);
+      el("calculateTop").addEventListener("click", manualCalculate);
+      el("calculateSide").addEventListener("click", manualCalculate);
+      el("copyReportTop").addEventListener("click", copyReport);
+      el("copyReportSide").addEventListener("click", copyReport);
+      el("exportPdfTop").addEventListener("click", exportPdf);
+      el("exportPdfSide").addEventListener("click", exportPdf);
+      el("exportPdfReport").addEventListener("click", exportPdf);
+      el("exportJson").addEventListener("click", exportJson);
+      el("exportCsv").addEventListener("click", exportCsv);
+      el("aboutMethod").addEventListener("click", openMethodDialog);
+      el("closeMethod").addEventListener("click", closeMethodDialog);
+      el("methodDialog").addEventListener("click", (event) => {
+        if (event.target === el("methodDialog")) closeMethodDialog();
+      });
+      el("loadExample").addEventListener("click", () => loadApp(exampleState()));
+      el("clearAll").addEventListener("click", clearAll);
+      el("importJson").addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+          loadApp(JSON.parse(text));
+          toast("Study file opened");
+        } catch {
+          toast("Could not open study file");
+        } finally {
+          event.target.value = "";
+        }
+      });
+    }
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("print-report");
+    });
+
+    function openMethodDialog() {
+      const dialog = el("methodDialog");
+      if (dialog.showModal) {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute("open", "");
+      }
+    }
+
+    function closeMethodDialog() {
+      const dialog = el("methodDialog");
+      if (dialog.close) {
+        dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+      }
+    }
+
+    function init() {
+      bindEvents();
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          loadApp(JSON.parse(saved));
+          return;
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+      loadApp(blankState());
+    }
+
+    init();
+  </script>
+</body>
+</html>
